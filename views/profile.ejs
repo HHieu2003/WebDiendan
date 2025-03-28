@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang cá nhân</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Trang cá nhân</h1>
+  <a href="/users">Quản lý Người dùng</a> | <a href="/forum">Diễn đàn</a> | <a href="/auth/logout">Đăng xuất</a>
+  <h2>Thông tin cá nhân</h2>
+  <form action="/profile/update" method="POST">
+    <label>Tên:</label><br>
+    <input type="text" name="name" value="<%= user.name %>" required><br>
+    <label>Email:</label><br>
+    <input type="email" name="email" value="<%= user.email %>" required><br>
+    <button type="submit">Cập nhật</button>
+  </form>
+
+  <h2>Chủ đề của bạn</h2>
+  <% if (forums && forums.length > 0) { %>
+    <ul>
+      <% forums.forEach(forum => { %>
+        <li>
+          <h3><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></h3>
+          <p>Nội dung: <%= forum.content.substring(0, 100) %>...</p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Bạn chưa tạo chủ đề nào.</p>
+  <% } %>
+
+  <h2>Bài viết của bạn</h2>
+  <% if (posts && posts.length > 0) { %>
+    <ul>
+      <% posts.forEach(post => { %>
+        <li>
+          <h3><%= post.title %></h3>
+          <p>Nội dung: <%= post.content.substring(0, 100) %>...</p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Bạn chưa tạo bài viết nào.</p>
+  <% } %>
+
+  <h2>Bình luận của bạn</h2>
+  <% if (comments && comments.length > 0) { %>
+    <ul>
+      <% comments.forEach(comment => { %>
+        <li><%= comment.content %></li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Bạn chưa có bình luận nào.</p>
+  <% } %>
+
+  <a href="/">Quay lại Trang chủ</a>
+</body>
+</html>

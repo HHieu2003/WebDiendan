@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chủ đề: <%= forum.title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Chủ đề: <%= forum.title %></h1>
+  <p>Nội dung: <%= forum.content %></p>
+  <p>Bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %></p>
+
+  <h2>Danh sách Bài viết</h2>
+  <% if (isAuthenticated) { %>
+    <a href="/forum/topic/<%= forum._id %>/add-post">Tạo Bài viết Mới</a>
+  <% } else { %>
+    <p>Vui lòng <a href="/auth/login">đăng nhập</a> để tạo bài viết.</p>
+  <% } %>
+  <% if (posts && posts.length > 0) { %>
+    <ul>
+      <% posts.forEach(post => { %>
+        <li>
+          <h3><a href="/forum/topic/<%= forum._id %>/post/<%= post._id %>"><%= post.title %></a></h3>
+          <p>Nội dung: <%= post.content.substring(0, 100) %>...</p>
+          <p>Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %></p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Chưa có bài viết nào.</p>
+  <% } %>
+  <a href="/forum">Quay lại Diễn đàn</a>
+</body>
+</html>

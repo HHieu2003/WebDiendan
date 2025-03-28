@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Người dùng</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Quản lý Người dùng</h1>
+  <a href="/forum">Đi đến Diễn đàn</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
+  <h2>Thêm/Sửa Người dùng</h2>
+  <form action="<%= user ? '/users/edit/' + user._id : '/users/add' %>" method="POST">
+    <label>Tên:</label><br>
+    <input type="text" name="name" value="<%= user ? user.name : '' %>" required><br>
+    <label>Email:</label><br>
+    <input type="email" name="email" value="<%= user ? user.email : '' %>" required><br>
+    <label>Mật khẩu:</label><br>
+    <input type="password" name="password" placeholder="Để trống nếu không đổi"><br>
+    <button type="submit"><%= user ? 'Cập nhật' : 'Thêm' %></button>
+  </form>
+
+  <h2>Danh sách Người dùng</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Email</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td><%= user.name %></td>
+          <td><%= user.email %></td>
+          <td>
+            <a href="/users/edit/<%= user._id %>">Sửa</a>
+            <a href="/users/delete/<%= user._id %>" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>

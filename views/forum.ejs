@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Diễn đàn</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Diễn đàn</h1>
+  <a href="/users">Quản lý Người dùng</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
+  <% if (isAuthenticated) { %>
+    <h2>Tạo Chủ đề Mới</h2>
+    <form action="/forum/add" method="POST">
+      <label>Tiêu đề:</label><br>
+      <input type="text" name="title" required><br>
+      <label>Nội dung:</label><br>
+      <textarea name="content" required></textarea><br>
+      <button type="submit">Tạo</button>
+    </form>
+  <% } else { %>
+    <p>Vui lòng <a href="/auth/login">đăng nhập</a> để tạo chủ đề.</p>
+  <% } %>
+
+  <h2>Danh sách Chủ đề</h2>
+  <% if (forums && forums.length > 0) { %>
+    <ul>
+      <% forums.forEach(forum => { %>
+        <li>
+          <h3><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></h3>
+          <p>Nội dung: <%= forum.content.substring(0, 100) %>...</p>
+          <p>Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %></p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Chưa có chủ đề nào.</p>
+  <% } %>
+</body>
+</html>

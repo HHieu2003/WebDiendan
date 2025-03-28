@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang chủ</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Chào mừng đến với Website Quản lý Sinh viên</h1>
+  <div>
+    <a href="/auth/login">Đăng nhập</a> | <a href="/auth/register">Đăng ký</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
+  </div>
+
+  <h2>Thông tin về Hệ thống</h2>
+  <p>Đây là hệ thống quản lý sinh viên, cho phép sinh viên đăng ký, đăng nhập, tham gia diễn đàn, và quản lý thông tin cá nhân. Quản trị viên có thể quản lý danh sách sinh viên.</p>
+
+  <h2>Thông báo</h2>
+  <p>Chào mừng bạn đến với hệ thống! Hiện tại chưa có thông báo mới.</p>
+
+  <h2>Danh sách Diễn đàn và Chủ đề</h2>
+  <% if (typeof forums !== 'undefined' && forums.length > 0) { %>
+    <% console.log('Forums in template:', forums); %>
+    <ul>
+      <% forums.forEach(forum => { %>
+        <li>
+          <h3><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></h3>
+          <p>Nội dung: <%= forum.content.substring(0, 100) %>...</p>
+          <p>Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %> - <%= new Date(forum.createdAt).toLocaleDateString() %></p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Chưa có chủ đề nào. Hãy đăng nhập và tạo chủ đề!</p>
+    <% console.log('Forums in else block:', forums); %>
+  <% } %>
+
+  <div>
+    <a href="/users">Quản lý Người dùng</a> | <a href="/forum">Diễn đàn</a>
+  </div>
+</body>
+</html>

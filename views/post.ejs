@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bài viết: <%= post.title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bài viết: <%= post.title %></h1>
+  <p>Nội dung: <%= post.content %></p>
+  <p>Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %></p>
+
+  <h2>Bình luận</h2>
+  <% if (isAuthenticated) { %>
+    <form action="/forum/topic/<%= forumId %>/post/<%= post._id %>/comment" method="POST">
+      <label>Nội dung:</label><br>
+      <textarea name="content" required></textarea><br>
+      <button type="submit">Gửi</button>
+    </form>
+  <% } else { %>
+    <p>Vui lòng <a href="/auth/login">đăng nhập</a> để bình luận.</p>
+  <% } %>
+
+  <ul>
+    <% comments.forEach(comment => { %>
+      <li><%= comment.content %> - bởi <%= comment.user ? comment.user.name : 'Người dùng không xác định' %></li>
+    <% }) %>
+  </ul>
+  <a href="/forum/topic/<%= forumId %>">Quay lại Chủ đề</a>
+</body>
+</html>

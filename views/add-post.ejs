@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo Bài viết</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Tạo Bài viết</h1>
+  <form action="/forum/topic/<%= forumId %>/add-post" method="POST">
+    <label>Tiêu đề:</label><br>
+    <input type="text" name="title" required><br>
+    <label>Nội dung:</label><br>
+    <textarea name="content" required></textarea><br>
+    <button type="submit">Tạo</button>
+  </form>
+  <a href="/forum/topic/<%= forumId %>">Quay lại Chủ đề</a>
+</body>
+</html>
