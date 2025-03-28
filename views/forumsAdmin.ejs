@@ -1,0 +1,45 @@
+<!-- views/forumsAdmin.ejs -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Chủ đề</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Quản lý Chủ đề</h1>
+  <a href="/users">Quản lý Người dùng</a> | <a href="/postsAdmin">Quản lý Bài viết</a> | <a href="/commentsAdmin">Quản lý Bình luận</a> | <a href="/forum">Diễn đàn</a> | <a href="/auth/logout">Đăng xuất</a>
+  
+  <h2>Sửa Chủ đề</h2>
+  <form action="<%= forum ? '/forumsAdmin/edit/' + forum._id : '/forumsAdmin' %>" method="POST">
+    <label>Tiêu đề:</label><br>
+    <input type="text" name="title" value="<%= forum ? forum.title : '' %>" required><br>
+    <label>Nội dung:</label><br>
+    <textarea name="content" required><%= forum ? forum.content : '' %></textarea><br>
+    <button type="submit">Cập nhật</button>
+  </form>
+
+  <h2>Danh sách Chủ đề</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu đề</th>
+        <th>Tác giả</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% forums.forEach(forum => { %>
+        <tr>
+          <td><%= forum.title %></td>
+          <td><%= forum.user ? forum.user.name : 'Không xác định' %></td>
+          <td>
+            <a href="/forumsAdmin/edit/<%= forum._id %>">Sửa</a>
+            <a href="/forumsAdmin/delete/<%= forum._id %>" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</body>
+</html>

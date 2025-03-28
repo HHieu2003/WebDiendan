@@ -1,4 +1,4 @@
-
+// index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -7,11 +7,13 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const forumRoutes = require('./routes/forum');
 const profileRoutes = require('./routes/profile');
-require('dotenv').config(); // Tải biến môi trường từ .env
+const forumsAdminRoutes = require('./routes/forumsAdmin'); // Thêm route quản lý chủ đề
+const postsAdminRoutes = require('./routes/postsAdmin');   // Thêm route quản lý bài viết
+const commentsAdminRoutes = require('./routes/commentsAdmin'); // Thêm route quản lý bình luận
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5000;
-
 
 // Kết nối MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI, {
@@ -20,7 +22,6 @@ mongoose.connect(process.env.MONGO_URI, {
 })
   .then(() => console.log('Kết nối MongoDB Atlas thành công'))
   .catch(err => console.log('Lỗi kết nối MongoDB Atlas:', err));
-
 
 // Middleware
 app.use(express.json());
@@ -35,12 +36,13 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/forum', forumRoutes.router);
 app.use('/profile', profileRoutes);
+app.use('/forumsAdmin', forumsAdminRoutes);    // Thêm route quản lý chủ đề
+app.use('/postsAdmin', postsAdminRoutes);      // Thêm route quản lý bài viết
+app.use('/commentsAdmin', commentsAdminRoutes); // Thêm route quản lý bình luận
 
 // Trang chủ
 app.get('/', async (req, res) => {
   const forums = await forumRoutes.getForums();
-  console.log('Forums found:', forums);
-  console.log('Forums length:', forums.length);
   res.render('index', { forums });
 });
 
