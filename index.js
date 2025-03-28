@@ -8,6 +8,7 @@ const userRoutes = require('./routes/users');
 const forumRoutes = require('./routes/forum');
 const profileRoutes = require('./routes/profile');
 require('dotenv').config(); // Tải biến môi trường từ .env
+const expressLayouts = require('express-ejs-layouts'); // Thêm express-ejs-layouts
 
 const app = express();
 const port = process.env.PORT || 5000;
