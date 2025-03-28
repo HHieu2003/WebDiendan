@@ -1,3 +1,4 @@
+<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -19,7 +20,6 @@
 
   <h2>Danh sách Diễn đàn và Chủ đề</h2>
   <% if (typeof forums !== 'undefined' && forums.length > 0) { %>
-    <% console.log('Forums in template:', forums); %>
     <ul>
       <% forums.forEach(forum => { %>
         <li>
@@ -31,11 +31,14 @@
     </ul>
   <% } else { %>
     <p>Chưa có chủ đề nào. Hãy đăng nhập và tạo chủ đề!</p>
-    <% console.log('Forums in else block:', forums); %>
   <% } %>
 
   <div>
-    <a href="/users">Quản lý Người dùng</a> | <a href="/forum">Diễn đàn</a>
+    <a href="/users">Quản lý Người dùng</a> | 
+    <a href="/forumsAdmin">Quản lý Chủ đề</a> | 
+    <a href="/postsAdmin">Quản lý Bài viết</a> | 
+    <a href="/commentsAdmin">Quản lý Bình luận</a> | 
+    <a href="/forum">Diễn đàn</a>
   </div>
 </body>
 </html>

@@ -1,3 +1,4 @@
+// routes/users.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -6,7 +7,7 @@ const { adminAuth } = require('../middleware/auth');
 
 // Xem danh sách người dùng (chỉ quản trị viên)
 router.get('/', adminAuth, async (req, res) => {
-  const users = await User.find({ role: 'student' });
+  const users = await User.find();
   res.render('users', { users, user: null });
 });
 
@@ -16,10 +17,15 @@ router.get('/add', adminAuth, (req, res) => {
 });
 
 router.post('/add', adminAuth, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body; // Thêm role vào destructuring
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const user = new User({ name, email, password: hashedPassword, role: 'student' });
+  const user = new User({ 
+    name, 
+    email, 
+    password: hashedPassword, 
+    role: role || 'student' // Gán role, mặc định là 'student' nếu không cung cấp
+  });
   await user.save();
   res.redirect('/users');
 });
@@ -37,8 +43,8 @@ router.get('/edit/:id', adminAuth, async (req, res) => {
 });
 
 router.post('/edit/:id', adminAuth, async (req, res) => {
-  const { name, email, password } = req.body;
-  const updateData = { name, email };
+  const { name, email, password, role } = req.body; // Thêm role vào destructuring
+  const updateData = { name, email, role }; // Thêm role vào dữ liệu cập nhật
   if (password) {
     const salt = await bcrypt.genSalt(10);
     updateData.password = await bcrypt.hash(password, salt);
