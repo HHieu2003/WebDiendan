@@ -4,22 +4,46 @@ const User = require('../models/User');
 const Forum = require('../models/Forum');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
-const { auth } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 
-// Trang cá nhân
-router.get('/', auth, async (req, res) => {
-  const user = await User.findById(req.user._id);
-  const forums = await Forum.find({ user: req.user._id });
-  const posts = await Post.find({ user: req.user._id });
-  const comments = await Comment.find({ user: req.user._id });
-  res.render('profile', { user, forums, posts, comments });
+// Middleware xác thực
+const authenticate = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.redirect('/auth/login');
+  }
+  try {
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    req.userId = decoded.userId;
+    next();
+  } catch (err) {
+    res.redirect('/auth/login');
+  }
+};
+
+// Hiển thị trang cá nhân
+router.get('/', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const forums = await Forum.find({ user: req.userId });
+    const posts = await Post.find({ user: req.userId });
+    const comments = await Comment.find({ user: req.userId });
+    const isAuthenticated = req.userId !== null;
+    res.render('profile', { user, forums, posts, comments, isAuthenticated });
+  } catch (err) {
+    res.status(500).send('Lỗi server');
+  }
 });
 
 // Cập nhật thông tin cá nhân
-router.post('/update', auth, async (req, res) => {
+router.post('/update', authenticate, async (req, res) => {
   const { name, email } = req.body;
-  await User.findByIdAndUpdate(req.user._id, { name, email });
-  res.redirect('/profile');
+  try {
+    await User.findByIdAndUpdate(req.userId, { name, email });
+    res.redirect('/profile');
+  } catch (err) {
+    res.status(500).send('Lỗi server');
+  }
 });
 
 module.exports = router;

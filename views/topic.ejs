@@ -3,41 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <title>Chủ đề: <%= forum.title %></title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
   <%- include('partials/navbar') %>
-  <div class="container mt-4">
+  <div class="container mt-5 pt-5">
     <h1 class="mb-4">Chủ đề: <%= forum.title %></h1>
-    <div class="card mb-4">
+    <div class="card mb-4 shadow">
       <div class="card-body">
         <p class="card-text"><%= forum.content %></p>
-        <p class="card-text text-muted">Bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %></p>
+        <p class="card-text text-muted">Bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %> - <%= new Date(forum.createdAt).toLocaleString() %></p>
       </div>
     </div>
     <h2 class="mb-3">Danh sách Bài viết</h2>
     <% if (isAuthenticated) { %>
       <a href="/forum/topic/<%= forum._id %>/add-post" class="btn btn-primary mb-3">Tạo Bài viết Mới</a>
     <% } else { %>
-      <p class="alert alert-warning mb-3">Vui lòng <a href="/auth/login" class="link-primary">đăng nhập</a> để tạo bài viết.</p>
+      <div class="alert alert-warning mb-3">Vui lòng <a href="/auth/login" class="link-primary">đăng nhập</a> để tạo bài viết.</div>
     <% } %>
     <% if (posts && posts.length > 0) { %>
-      <div class="list-group">
+      <div class="row">
         <% posts.forEach(post => { %>
-          <a href="/forum/topic/<%= forum._id %>/post/<%= post._id %>" class="list-group-item list-group-item-action">
-            <h5 class="mb-1"><%= post.title %></h5>
-            <p class="mb-1"><%= post.content.substring(0, 100) %>...</p>
-            <small class="text-muted">Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %></small>
-          </a>
+          <div class="col-md-4 mb-4">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title"><a href="/forum/topic/<%= forum._id %>/post/<%= post._id %>" class="text-primary"><%= post.title %></a></h5>
+                <p class="card-text"><%= post.content.substring(0, 100) %>...</p>
+                <p class="card-text text-muted">Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %> - <%= new Date(post.createdAt).toLocaleString() %></p>
+              </div>
+            </div>
+          </div>
         <% }) %>
       </div>
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1">Trước</a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item">
+            <a class="page-link" href="#">Sau</a>
+          </li>
+        </ul>
+      </nav>
     <% } else { %>
-      <p class="alert alert-warning">Chưa có bài viết nào.</p>
+      <div class="alert alert-warning">Chưa có bài viết nào.</div>
     <% } %>
     <div class="mt-4 text-center">
       <a href="/forum" class="btn btn-secondary">Quay lại Diễn đàn</a>
     </div>
   </div>
+  <%- include('partials/footer') %>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

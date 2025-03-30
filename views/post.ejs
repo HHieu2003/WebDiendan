@@ -3,27 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Bài viết: <%= post.title %></title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  ư<%- include('partials/navbar') %>
-  <div class="container mt-4">
+  <%- include('partials/navbar') %>
+  <div class="container mt-5 pt-5">
     <h1 class="mb-4">Bài viết: <%= post.title %></h1>
-    <div class="card mb-4">
+    <div class="card mb-4 shadow">
       <div class="card-body">
         <p class="card-text"><%= post.content %></p>
-        <p class="card-text text-muted">Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %></p>
+        <p class="card-text text-muted">Bởi: <%= post.user ? post.user.name : 'Người dùng không xác định' %> - <%= new Date(post.createdAt).toLocaleString() %></p>
       </div>
     </div>
     <h2 class="mb-3">Bình luận</h2>
     <% if (isAuthenticated) { %>
-      <div class="card mb-4">
+      <div class="card mb-4 shadow">
         <div class="card-body">
           <form action="/forum/topic/<%= forumId %>/post/<%= post._id %>/comment" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
               <label for="content" class="form-label">Nội dung:</label>
-              <textarea class="form-control" id="content" name="content" required></textarea>
+              <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
               <div class="invalid-feedback">Vui lòng nhập nội dung bình luận.</div>
             </div>
             <button type="submit" class="btn btn-primary">Gửi</button>
@@ -31,20 +33,42 @@
         </div>
       </div>
     <% } else { %>
-      <p class="alert alert-warning mb-3">Vui lòng <a href="/auth/login" class="link-primary">đăng nhập</a> để bình luận.</p>
+      <div class="alert alert-warning mb-3">Vui lòng <a href="/auth/login" class="link-primary">đăng nhập</a> để bình luận.</div>
     <% } %>
-    <div class="list-group">
-      <% comments.forEach(comment => { %>
-        <div class="list-group-item">
-          <p class="mb-1"><%= comment.content %></p>
-          <small class="text-muted">Bởi: <%= comment.user ? comment.user.name : 'Người dùng không xác định' %> - <%= new Date(comment.createdAt).toLocaleDateString() %></small>
-        </div>
-      <% }) %>
+    <div class="card shadow">
+      <div class="card-body">
+        <% if (comments && comments.length > 0) { %>
+          <div class="list-group">
+            <% comments.forEach(comment => { %>
+              <div class="list-group-item mb-3">
+                <p class="mb-1"><%= comment.content %></p>
+                <small class="text-muted">Bởi: <%= comment.user ? comment.user.name : 'Người dùng không xác định' %> - <%= new Date(comment.createdAt).toLocaleString() %></small>
+              </div>
+            <% }) %>
+          </div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+              <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Trước</a>
+              </li>
+              <li class="page-item active"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#">Sau</a>
+              </li>
+            </ul>
+          </nav>
+        <% } else { %>
+          <div class="alert alert-warning">Chưa có bình luận nào.</div>
+        <% } %>
+      </div>
     </div>
     <div class="mt-4 text-center">
       <a href="/forum/topic/<%= forumId %>" class="btn btn-secondary">Quay lại Chủ đề</a>
     </div>
   </div>
+  <%- include('partials/footer') %>
   <script>
     (function () {
       'use strict'

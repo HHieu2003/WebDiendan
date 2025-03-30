@@ -1,31 +1,22 @@
 const jwt = require('jsonwebtoken');
 
-const auth = (req, res, next) => {
-  const token = req.cookies && req.cookies.token;
-  if (!token) return res.status(401).send('Không có token, truy cập bị từ chối');
-
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token;
+  req.isAuthenticated = !!token; // Đặt biến isAuthenticated dựa trên sự tồn tại của token
+  if (!token) {
+    return res.redirect('/auth/login');
+  }
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret');
-    req.user = decoded;
+    req.userId = decoded.id;
+    req.isAuthenticated = true; // Xác nhận đăng nhập thành công
     next();
-  } catch (error) {
-    res.status(401).send('Token không hợp lệ');
+  } catch (err) {
+    console.error('Error verifying token:', err);
+    res.clearCookie('token');
+    req.isAuthenticated = false;
+    res.redirect('/auth/login');
   }
 };
 
-// Middleware kiểm tra quản trị viên
-const adminAuth = (req, res, next) => {
-  const token = req.cookies && req.cookies.token;
-  if (!token) return res.status(401).send('Không có token, truy cập bị từ chối');
-
-  try {
-    const decoded = jwt.verify(token, 'your_jwt_secret');
-    if (decoded.role !== 'admin') return res.status(403).send('Chỉ quản trị viên mới có quyền truy cập');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).send('Token không hợp lệ');
-  }
-};
-
-module.exports = { auth, adminAuth };
+module.exports = verifyToken;
