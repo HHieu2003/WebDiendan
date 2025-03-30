@@ -1,44 +1,38 @@
-<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Trang chủ</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <h1>Chào mừng đến với Website Quản lý Sinh viên</h1>
-  <div>
-    <a href="/auth/login">Đăng nhập</a> | <a href="/auth/register">Đăng ký</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
-  </div>
-
-  <h2>Thông tin về Hệ thống</h2>
-  <p>Đây là hệ thống quản lý sinh viên, cho phép sinh viên đăng ký, đăng nhập, tham gia diễn đàn, và quản lý thông tin cá nhân. Quản trị viên có thể quản lý danh sách sinh viên.</p>
-
-  <h2>Thông báo</h2>
-  <p>Chào mừng bạn đến với hệ thống! Hiện tại chưa có thông báo mới.</p>
-
-  <h2>Danh sách Diễn đàn và Chủ đề</h2>
-  <% if (typeof forums !== 'undefined' && forums.length > 0) { %>
-    <ul>
-      <% forums.forEach(forum => { %>
-        <li>
-          <h3><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></h3>
-          <p>Nội dung: <%= forum.content.substring(0, 100) %>...</p>
-          <p>Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %> - <%= new Date(forum.createdAt).toLocaleDateString() %></p>
-        </li>
-      <% }) %>
-    </ul>
-  <% } else { %>
-    <p>Chưa có chủ đề nào. Hãy đăng nhập và tạo chủ đề!</p>
-  <% } %>
-
-  <div>
-    <a href="/users">Quản lý Người dùng</a> | 
-    <a href="/forumsAdmin">Quản lý Chủ đề</a> | 
-    <a href="/postsAdmin">Quản lý Bài viết</a> | 
-    <a href="/commentsAdmin">Quản lý Bình luận</a> | 
-    <a href="/forum">Diễn đàn</a>
+  <%- include('partials/navbar') %>
+  <div class="container mt-4">
+    <h1 class="display-4 text-center mb-4">Chào mừng đến với Website Quản lý Sinh viên</h1>
+    <h2 class="mt-4">Thông tin về Hệ thống</h2>
+    <p class="lead">Đây là hệ thống quản lý sinh viên, cho phép sinh viên đăng ký, đăng nhập, tham gia diễn đàn, và quản lý thông tin cá nhân. Quản trị viên có thể quản lý danh sách sinh viên.</p>
+    <h2 class="mt-4">Thông báo</h2>
+    <p class="alert alert-info">Chào mừng bạn đến với hệ thống! Hiện tại chưa có thông báo mới.</p>
+    <h2 class="mt-4">Danh sách Diễn đàn và Chủ đề</h2>
+    <% if (typeof forums !== 'undefined' && forums.length > 0) { %>
+      <div class="list-group">
+        <% forums.forEach(forum => { %>
+          <a href="/forum/topic/<%= forum._id %>" class="list-group-item list-group-item-action">
+            <h5 class="mb-1"><%= forum.title %></h5>
+            <p class="mb-1"><%= forum.content.substring(0, 100) %>...</p>
+            <small class="text-muted">Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %> - <%= new Date(forum.createdAt).toLocaleDateString() %></small>
+          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="alert alert-warning">Chưa có chủ đề nào. Hãy đăng nhập và tạo chủ đề!</p>
+    <% } %>
+    <div class="mt-4 text-center">
+      <a href="/users" class="btn btn-info me-2">Quản lý Người dùng</a>
+      <a href="/forum" class="btn btn-info">Diễn đàn</a>
+    </div>
   </div>
 </body>
 </html>

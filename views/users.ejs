@@ -1,53 +1,89 @@
-<!-- views/users.ejs -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Quản lý Người dùng</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </head>
 <body>
-  <h1>Quản lý Người dùng</h1>
-  <a href="/forum">Đi đến Diễn đàn</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
-  <h2>Thêm/Sửa Người dùng</h2>
-  <form action="<%= user ? '/users/edit/' + user._id : '/users/add' %>" method="POST">
-    <label>Tên:</label><br>
-    <input type="text" name="name" value="<%= user ? user.name : '' %>" required><br>
-    <label>Email:</label><br>
-    <input type="email" name="email" value="<%= user ? user.email : '' %>" required><br>
-    <label>Mật khẩu:</label><br>
-    <input type="password" name="password" placeholder="Để trống nếu không đổi"><br>
-    <label>Vai trò:</label><br>
-    <select name="role" required>
-      <option value="student" <%= user && user.role === 'student' ? 'selected' : '' %>>Sinh viên</option>
-      <option value="admin" <%= user && user.role === 'admin' ? 'selected' : '' %>>Quản trị viên</option>
-    </select><br>
-    <button type="submit"><%= user ? 'Cập nhật' : 'Thêm' %></button>
-  </form>
-
-  <h2>Danh sách Người dùng</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Tên</th>
-        <th>Email</th>
-        <th>Vai trò</th> <!-- Thêm cột Vai trò -->
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% users.forEach(user => { %>
-        <tr>
-          <td><%= user.name %></td>
-          <td><%= user.email %></td>
-          <td><%= user.role === 'admin' ? 'Quản trị viên' : 'Sinh viên' %></td> <!-- Hiển thị Vai trò -->
-          <td>
-            <a href="/users/edit/<%= user._id %>">Sửa</a>
-            <a href="/users/delete/<%= user._id %>" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+  <div class="container mt-4">
+    <h1 class="mb-4">Quản lý Người dùng</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <a href="/forum" class="btn btn-secondary me-2">Đi đến Diễn đàn</a>
+        <a href="/profile" class="btn btn-secondary me-2">Trang cá nhân</a>
+        <a href="/auth/logout" class="btn btn-danger">Đăng xuất</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2>Thêm/Sửa Người dùng</h2>
+      </div>
+      <div class="card-body">
+        <form action="<%= user ? '/users/edit/' + user._id : '/users/add' %>" method="POST" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="name" class="form-label">Tên:</label>
+            <input type="text" class="form-control" id="name" name="name" value="<%= user ? user.name : '' %>" required>
+            <div class="invalid-feedback">Vui lòng nhập tên.</div>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="email" name="email" value="<%= user ? user.email : '' %>" required>
+            <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu:</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Để trống nếu không đổi">
+          </div>
+          <button type="submit" class="btn btn-primary"><%= user ? 'Cập nhật' : 'Thêm' %></button>
+        </form>
+      </div>
+    </div>
+    <div class="card mt-4">
+      <div class="card-header">
+        <h2>Danh sách Người dùng</h2>
+      </div>
+      <div class="card-body">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>Email</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(user => { %>
+              <tr>
+                <td><%= user.name %></td>
+                <td><%= user.email %></td>
+                <td>
+                  <a href="/users/edit/<%= user._id %>" class="btn btn-sm btn-warning">Sửa</a>
+                  <a href="/users/delete/<%= user._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+  </script>
 </body>
 </html>

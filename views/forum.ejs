@@ -3,37 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <title>Diễn đàn</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </head>
 <body>
-  <h1>Diễn đàn</h1>
-  <a href="/users">Quản lý Người dùng</a> | <a href="/profile">Trang cá nhân</a> | <a href="/auth/logout">Đăng xuất</a>
-  <% if (isAuthenticated) { %>
-    <h2>Tạo Chủ đề Mới</h2>
-    <form action="/forum/add" method="POST">
-      <label>Tiêu đề:</label><br>
-      <input type="text" name="title" required><br>
-      <label>Nội dung:</label><br>
-      <textarea name="content" required></textarea><br>
-      <button type="submit">Tạo</button>
-    </form>
-  <% } else { %>
-    <p>Vui lòng <a href="/auth/login">đăng nhập</a> để tạo chủ đề.</p>
-  <% } %>
-
-  <h2>Danh sách Chủ đề</h2>
-  <% if (forums && forums.length > 0) { %>
-    <ul>
-      <% forums.forEach(forum => { %>
-        <li>
-          <h3><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></h3>
-          <p>Nội dung: <%= forum.content.substring(0, 100) %>...</p>
-          <p>Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %></p>
-        </li>
-      <% }) %>
-    </ul>
-  <% } else { %>
-    <p>Chưa có chủ đề nào.</p>
-  <% } %>
+  <%- include('partials/navbar') %>
+  <div class="container mt-4">
+    <h1 class="mb-4">Diễn đàn</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <a href="/users" class="btn btn-secondary me-2">Quản lý Người dùng</a>
+        <a href="/profile" class="btn btn-secondary me-2">Trang cá nhân</a>
+        <a href="/auth/logout" class="btn btn-danger">Đăng xuất</a>
+      </div>
+    </div>
+    <% if (isAuthenticated) { %>
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>Tạo Chủ đề Mới</h2>
+        </div>
+        <div class="card-body">
+          <form action="/forum/add" method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label for="title" class="form-label">Tiêu đề:</label>
+              <input type="text" class="form-control" id="title" name="title" required>
+              <div class="invalid-feedback">Vui lòng nhập tiêu đề.</div>
+            </div>
+            <div class="mb-3">
+              <label for="content" class="form-label">Nội dung:</label>
+              <textarea class="form-control" id="content" name="content" required></textarea>
+              <div class="invalid-feedback">Vui lòng nhập nội dung.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Tạo</button>
+          </form>
+        </div>
+      </div>
+    <% } else { %>
+      <p class="alert alert-warning">Vui lòng <a href="/auth/login" class="link-primary">đăng nhập</a> để tạo chủ đề.</p>
+    <% } %>
+    <div class="card">
+      <div class="card-header">
+        <h2>Danh sách Chủ đề</h2>
+      </div>
+      <div class="card-body">
+        <% if (forums && forums.length > 0) { %>
+          <div class="list-group">
+            <% forums.forEach(forum => { %>
+              <a href="/forum/topic/<%= forum._id %>" class="list-group-item list-group-item-action">
+                <h5 class="mb-1"><%= forum.title %></h5>
+                <p class="mb-1"><%= forum.content.substring(0, 100) %>...</p>
+                <small class="text-muted">Được tạo bởi: <%= forum.user ? forum.user.name : 'Người dùng không xác định' %></small>
+              </a>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="alert alert-warning">Chưa có chủ đề nào.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
+  </script>
 </body>
 </html>

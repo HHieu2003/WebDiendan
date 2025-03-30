@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ _id: user._id, role: user.role }, 'your_jwt_secret');
     res.cookie('token', token, { httpOnly: true });
-    res.redirect('/profile'); // Chuyển hướng đến trang cá nhân sau khi đăng nhập
+    res.redirect('/'); // Chuyển hướng đến trang cá nhân sau khi đăng nhập
   } catch (error) {
     res.status(500).send('Lỗi server');
   }

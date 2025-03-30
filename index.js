@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -7,26 +6,17 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const forumRoutes = require('./routes/forum');
 const profileRoutes = require('./routes/profile');
-<<<<<<< HEAD
-require('dotenv').config(); // Tải biến môi trường từ .env
-const expressLayouts = require('express-ejs-layouts'); // Thêm express-ejs-layouts
-=======
-const forumsAdminRoutes = require('./routes/forumsAdmin'); // Thêm route quản lý chủ đề
-const postsAdminRoutes = require('./routes/postsAdmin');   // Thêm route quản lý bài viết
-const commentsAdminRoutes = require('./routes/commentsAdmin'); // Thêm route quản lý bình luận
-require('dotenv').config();
->>>>>>> bddecab18e8144170ce5cf8cc82775271e1ae475
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = 3000;
 
-// Kết nối MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI, {
+// Kết nối MongoDB
+mongoose.connect('mongodb://localhost:27017/studentmanagement', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('Kết nối MongoDB Atlas thành công'))
-  .catch(err => console.log('Lỗi kết nối MongoDB Atlas:', err));
+  .then(() => console.log('Kết nối MongoDB thành công'))
+  .catch(err => console.log('Lỗi kết nối MongoDB:', err));
 
 // Middleware
 app.use(express.json());
@@ -41,14 +31,14 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/forum', forumRoutes.router);
 app.use('/profile', profileRoutes);
-app.use('/forumsAdmin', forumsAdminRoutes);    // Thêm route quản lý chủ đề
-app.use('/postsAdmin', postsAdminRoutes);      // Thêm route quản lý bài viết
-app.use('/commentsAdmin', commentsAdminRoutes); // Thêm route quản lý bình luận
 
 // Trang chủ
 app.get('/', async (req, res) => {
   const forums = await forumRoutes.getForums();
-  res.render('index', { forums });
+  const isAuthenticated = req.cookies && req.cookies.token;
+  console.log('Forums found:', forums);
+  console.log('Forums length:', forums.length);
+  res.render('index', { forums, isAuthenticated });
 });
 
 // Khởi động server
