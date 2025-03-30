@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Middleware xác thực
+// Middleware xác thực và kiểm tra vai trò admin
 const authenticate = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
@@ -12,6 +12,10 @@ const authenticate = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret');
     req.userId = decoded.userId;
+    req.role = decoded.role;
+    if (req.role !== 'admin') {
+      return res.status(403).send('Chỉ admin mới có quyền truy cập');
+    }
     next();
   } catch (err) {
     res.redirect('/auth/login');
@@ -22,8 +26,9 @@ const authenticate = (req, res, next) => {
 router.get('/', authenticate, async (req, res) => {
   try {
     const users = await User.find();
-    const isAuthenticated = req.cookies && req.cookies.token;
-    res.render('users', { users, user: null, isAuthenticated });
+    const isAuthenticated = req.userId !== null;
+    const userRole = req.role;
+    res.render('users', { users, user: null, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -31,8 +36,9 @@ router.get('/', authenticate, async (req, res) => {
 
 // Hiển thị form thêm người dùng
 router.get('/add', authenticate, (req, res) => {
-  const isAuthenticated = req.cookies && req.cookies.token;
-  res.render('users', { users: [], user: null, isAuthenticated });
+  const isAuthenticated = req.userId !== null;
+  const userRole = req.role;
+  res.render('users', { users: [], user: null, isAuthenticated, userRole });
 });
 
 // Thêm người dùng
@@ -52,8 +58,9 @@ router.get('/edit/:id', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const users = await User.find();
-    const isAuthenticated = req.cookies && req.cookies.token;
-    res.render('users', { users, user, isAuthenticated });
+    const isAuthenticated = req.userId !== null;
+    const userRole = req.role;
+    res.render('users', { users, user, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }

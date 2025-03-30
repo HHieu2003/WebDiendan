@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const forumRoutes = require('./routes/forum');
 const profileRoutes = require('./routes/profile');
+const adminRoutes = require('./routes/admin'); // Thêm route admin
 
 require('dotenv').config();
 
@@ -34,14 +35,17 @@ const authenticate = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     req.userId = null;
+    req.role = null;
     return next();
   }
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret');
     req.userId = decoded.userId;
+    req.role = decoded.role;
     next();
   } catch (err) {
     req.userId = null;
+    req.role = null;
     next();
   }
 };
@@ -49,17 +53,19 @@ const authenticate = (req, res, next) => {
 // Routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
-app.use('/forum', forumRoutes); // Sửa lỗi: Bỏ .router vì forumRoutes đã là router
+app.use('/forum', forumRoutes);
 app.use('/profile', profileRoutes);
+app.use('/admin', adminRoutes); // Thêm route admin
 
 // Trang chủ
 app.get('/', authenticate, async (req, res) => {
   try {
-    const forums = await forumRoutes.getForums(); // Gọi hàm getForums từ forumRoutes
+    const forums = await forumRoutes.getForums();
     const isAuthenticated = req.userId !== null;
+    const userRole = req.role;
     console.log('Forums found:', forums);
     console.log('Forums length:', forums.length);
-    res.render('index', { forums, isAuthenticated });
+    res.render('index', { forums, isAuthenticated, userRole });
   } catch (err) {
     console.error('Lỗi khi lấy danh sách diễn đàn:', err);
     res.status(500).send('Lỗi server');

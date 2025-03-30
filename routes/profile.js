@@ -13,8 +13,9 @@ const authenticate = (req, res, next) => {
     return res.redirect('/auth/login');
   }
   try {
-    const decoded = jwt.verify(token, 'your_jwt_secret');
+ const decoded = jwt.verify(token, 'your_jwt_secret');
     req.userId = decoded.userId;
+    req.role = decoded.role;
     next();
   } catch (err) {
     res.redirect('/auth/login');
@@ -29,7 +30,8 @@ router.get('/', authenticate, async (req, res) => {
     const posts = await Post.find({ user: req.userId });
     const comments = await Comment.find({ user: req.userId });
     const isAuthenticated = req.userId !== null;
-    res.render('profile', { user, forums, posts, comments, isAuthenticated });
+    const userRole = req.role;
+    res.render('profile', { user, forums, posts, comments, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }

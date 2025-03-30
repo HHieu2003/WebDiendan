@@ -11,14 +11,17 @@ const authenticate = (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     req.userId = null;
+    req.role = null;
     return next();
   }
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret');
     req.userId = decoded.userId;
+    req.role = decoded.role;
     next();
   } catch (err) {
     req.userId = null;
+    req.role = null;
     next();
   }
 };
@@ -37,7 +40,8 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const forums = await getForums();
     const isAuthenticated = req.userId !== null;
-    res.render('forum', { forums, isAuthenticated });
+    const userRole = req.role;
+    res.render('forum', { forums, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -51,7 +55,8 @@ router.get('/search', authenticate, async (req, res) => {
       title: { $regex: query, $options: 'i' } 
     }).populate('user');
     const isAuthenticated = req.userId !== null;
-    res.render('forum', { forums, isAuthenticated });
+    const userRole = req.role;
+    res.render('forum', { forums, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -78,7 +83,8 @@ router.get('/topic/:id', authenticate, async (req, res) => {
     const forum = await Forum.findById(req.params.id).populate('user');
     const posts = await Post.find({ forum: req.params.id }).populate('user');
     const isAuthenticated = req.userId !== null;
-    res.render('topic', { forum, posts, isAuthenticated });
+    const userRole = req.role;
+    res.render('topic', { forum, posts, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -90,7 +96,8 @@ router.get('/topic/:id/add-post', authenticate, (req, res) => {
     return res.redirect('/auth/login');
   }
   const isAuthenticated = req.userId !== null;
-  res.render('add-post', { forumId: req.params.id, isAuthenticated });
+  const userRole = req.role;
+  res.render('add-post', { forumId: req.params.id, isAuthenticated, userRole });
 });
 
 // Thêm bài viết
@@ -114,7 +121,8 @@ router.get('/topic/:forumId/post/:postId', authenticate, async (req, res) => {
     const post = await Post.findById(req.params.postId).populate('user');
     const comments = await Comment.find({ post: req.params.postId }).populate('user');
     const isAuthenticated = req.userId !== null;
-    res.render('post', { post, comments, forumId: req.params.forumId, isAuthenticated });
+    const userRole = req.role;
+    res.render('post', { post, comments, forumId: req.params.forumId, isAuthenticated, userRole });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }

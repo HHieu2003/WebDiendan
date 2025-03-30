@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container">
-    <a class="navbar-brand" href="/">Trang chủ</a>
+    <a class="navbar-brand" href="/">Quản lý Sinh viên</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -10,9 +10,14 @@
           <a class="nav-link" href="/forum">Diễn đàn</a>
         </li>
         <% if (isAuthenticated) { %>
-          <li class="nav-item">
-            <a class="nav-link" href="/users">Quản lý Người dùng</a>
-          </li>
+          <% if (userRole === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/users">Quản lý Người dùng</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin">Quản lý Admin</a>
+            </li>
+          <% } %>
           <li class="nav-item">
             <a class="nav-link" href="/profile">Trang cá nhân</a>
           </li>
