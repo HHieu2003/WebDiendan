@@ -1,8 +1,45 @@
-<footer class="footer mt-auto py-3 bg-light">
-    <div class="container text-center">
-      <span class="text-muted">© 2025 Website Quản lý Sinh viên</span>
+<footer class="bg-dark text-white py-4 mt-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>Quản lý Sinh viên</h5>
+        <p>Hệ thống quản lý sinh viên và diễn đàn trao đổi.</p>
+      </div>
+      <div class="col-md-4">
+        <h5>Liên kết hữu ích</h5>
+        <ul class="list-unstyled">
+          <li><a href="/" class="text-white">Trang chủ</a></li>
+          <li><a href="/forum" class="text-white">Diễn đàn</a></li>
+          <li><a href="/profile" class="text-white">Trang cá nhân</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h5>Liên hệ</h5>
+        <p>Email: support@qlsv.com</p>
+        <p>Điện thoại: 0123 456 789</p>
+      </div>
     </div>
-  </footer>
-  <script src="/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <div class="text-center mt-3">
+      <p>&copy; 2025 Quản lý Sinh viên. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+<button onclick="topFunction()" id="backToTopBtn" class="btn btn-primary rounded-circle position-fixed bottom-0 end-0 m-3" style="display: none;">
+  <i class="bi bi-arrow-up"></i>
+</button>
+<script>
+  // Hiển thị nút "Quay lại đầu trang" khi cuộn xuống
+  window.onscroll = function() {
+    const btn = document.getElementById("backToTopBtn");
+    if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+      btn.style.display = "block";
+    } else {
+      btn.style.display = "none";
+    }
+  };
+
+  // Cuộn lên đầu trang khi nhấn nút
+  function topFunction() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>

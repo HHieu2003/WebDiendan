@@ -71,4 +71,13 @@ router.post('/topic/:forumId/post/:postId/comment', auth, async (req, res) => {
   res.redirect(`/forum/topic/${req.params.forumId}/post/${req.params.postId}`);
 });
 
+router.get('/search', async (req, res) => {
+  const query = req.query.query || '';
+  const forums = await Forum.find({ 
+    title: { $regex: query, $options: 'i' } 
+  }).populate('user');
+  const isAuthenticated = req.cookies && req.cookies.token;
+  res.render('forum', { forums, isAuthenticated });
+});
+
 module.exports = { router, getForums };
