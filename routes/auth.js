@@ -1,7 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
+
+// Middleware để lấy userRole và notifications từ token (nếu có)
+const getUserInfo = async (req) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return { userId: null, userRole: null, notifications: [] };
+  }
+  try {
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const userId = decoded.userId;
+    const userRole = decoded.role;
+    const notifications = await Notification.find({ user: userId, read: false })
+      .populate('post')
+      .populate('comment')
+      .populate('commenter')
+      .sort({ createdAt: -1 });
+    return { userId, userRole, notifications };
+  } catch (err) {
+    return { userId: null, userRole: null, notifications: [] };
+  }
+};
 
 // Đăng ký người dùng
 router.post('/register', async (req, res) => {
@@ -11,7 +33,7 @@ router.post('/register', async (req, res) => {
     if (existingUser) {
       return res.status(400).send('Email đã tồn tại');
     }
-    const user = new User({ name, email, password, role: 'student' }); // Vai trò mặc định là user
+    const user = new User({ name, email, password, role: 'student' });
     await user.save();
     res.redirect('/auth/login');
   } catch (err) {
@@ -41,32 +63,18 @@ router.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
-// Middleware để lấy userRole từ token (nếu có)
-const getUserRole = (req) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return null;
-  }
-  try {
-    const decoded = jwt.verify(token, 'your_jwt_secret');
-    return decoded.role;
-  } catch (err) {
-    return null;
-  }
-};
-
 // Hiển thị trang đăng ký
-router.get('/register', (req, res) => {
-  const isAuthenticated = req.cookies && req.cookies.token;
-  const userRole = getUserRole(req); // Lấy userRole từ token
-  res.render('register', { isAuthenticated, userRole });
+router.get('/register', async (req, res) => {
+  const { userId, userRole, notifications } = await getUserInfo(req);
+  const isAuthenticated = userId !== null;
+  res.render('register', { isAuthenticated, userRole, notifications });
 });
 
 // Hiển thị trang đăng nhập
-router.get('/login', (req, res) => {
-  const isAuthenticated = req.cookies && req.cookies.token;
-  const userRole = getUserRole(req); // Lấy userRole từ token
-  res.render('login', { isAuthenticated, userRole });
+router.get('/login', async (req, res) => {
+  const { userId, userRole, notifications } = await getUserInfo(req);
+  const isAuthenticated = userId !== null;
+  res.render('login', { isAuthenticated, userRole, notifications });
 });
 
 module.exports = router;

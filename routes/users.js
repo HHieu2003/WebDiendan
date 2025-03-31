@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
 
 // Middleware xác thực và kiểm tra vai trò admin
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     return res.redirect('/auth/login');
@@ -16,6 +17,11 @@ const authenticate = (req, res, next) => {
     if (req.role !== 'admin') {
       return res.status(403).send('Chỉ admin mới có quyền truy cập');
     }
+    req.notifications = await Notification.find({ user: req.userId, read: false })
+      .populate('post')
+      .populate('comment')
+      .populate('commenter')
+      .sort({ createdAt: -1 });
     next();
   } catch (err) {
     res.redirect('/auth/login');
@@ -28,7 +34,8 @@ router.get('/', authenticate, async (req, res) => {
     const users = await User.find();
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('users', { users, user: null, isAuthenticated, userRole });
+    const notifications = req.notifications;
+    res.render('users', { users, user: null, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -38,7 +45,8 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/add', authenticate, (req, res) => {
   const isAuthenticated = req.userId !== null;
   const userRole = req.role;
-  res.render('users', { users: [], user: null, isAuthenticated, userRole });
+  const notifications = req.notifications;
+  res.render('users', { users: [], user: null, isAuthenticated, userRole, notifications });
 });
 
 // Thêm người dùng
@@ -60,7 +68,8 @@ router.get('/edit/:id', authenticate, async (req, res) => {
     const users = await User.find();
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('users', { users, user, isAuthenticated, userRole });
+    const notifications = req.notifications;
+    res.render('users', { users, user, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -90,5 +99,7 @@ router.get('/delete/:id', authenticate, async (req, res) => {
     res.status(500).send('Lỗi server');
   }
 });
+
+
 
 module.exports = router;

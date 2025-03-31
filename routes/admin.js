@@ -4,10 +4,11 @@ const User = require('../models/User');
 const Forum = require('../models/Forum');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
 
 // Middleware xác thực và kiểm tra vai trò admin
-const authenticateAdmin = (req, res, next) => {
+const authenticateAdmin = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     return res.redirect('/auth/login');
@@ -18,6 +19,16 @@ const authenticateAdmin = (req, res, next) => {
     req.role = decoded.role;
     if (req.role !== 'admin') {
       return res.status(403).send('Chỉ admin mới có quyền truy cập');
+    }
+    // Lấy danh sách thông báo, nếu lỗi thì trả về mảng rỗng
+    try {
+      req.notifications = await Notification.find({ user: req.userId, read: false })
+        .populate('post')
+        .populate('comment')
+        .populate('commenter')
+        .sort({ createdAt: -1 });
+    } catch (err) {
+      req.notifications = []; // Đảm bảo luôn có giá trị
     }
     next();
   } catch (err) {
@@ -34,7 +45,8 @@ router.get('/', authenticateAdmin, async (req, res) => {
     const comments = await Comment.find().populate('user').populate('post');
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('admin', { users, forums, posts, comments, isAuthenticated, userRole });
+    const notifications = req.notifications || []; // Đảm bảo notifications luôn là mảng
+    res.render('admin', { users, forums, posts, comments, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -54,8 +66,8 @@ router.get('/delete-user/:id', authenticateAdmin, async (req, res) => {
 router.get('/delete-forum/:id', authenticateAdmin, async (req, res) => {
   try {
     await Forum.findByIdAndDelete(req.params.id);
-    await Post.deleteMany({ forum: req.params.id }); // Xóa các bài viết liên quan
-    await Comment.deleteMany({ post: { $in: await Post.find({ forum: req.params.id }).select('_id') } }); // Xóa các bình luận liên quan
+    await Post.deleteMany({ forum: req.params.id });
+    await Comment.deleteMany({ post: { $in: await Post.find({ forum: req.params.id }).select('_id') } });
     res.redirect('/admin');
   } catch (err) {
     res.status(500).send('Lỗi server');
@@ -66,7 +78,7 @@ router.get('/delete-forum/:id', authenticateAdmin, async (req, res) => {
 router.get('/delete-post/:id', authenticateAdmin, async (req, res) => {
   try {
     await Post.findByIdAndDelete(req.params.id);
-    await Comment.deleteMany({ post: req.params.id }); // Xóa các bình luận liên quan
+    await Comment.deleteMany({ post: req.params.id });
     res.redirect('/admin');
   } catch (err) {
     res.status(500).send('Lỗi server');

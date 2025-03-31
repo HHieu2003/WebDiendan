@@ -9,16 +9,20 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include('partials/navbar') %>
+  <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole, notifications: notifications }) %>
   <div class="container mt-5 pt-5">
     <div class="jumbotron text-center bg-primary text-white py-5 rounded">
-      <h1 class="display-4">Chào mừng đến với diễn đàn Sinh viên</h1>
-      <p class="lead">Tham gia diễn đàn, trò chuyện với mọi người, và hơn thế nữa!</p>
+      <h1 class="display-4">Chào mừng đến với Website Quản lý Sinh viên</h1>
+      <p class="lead">Tham gia diễn đàn, quản lý thông tin cá nhân, và hơn thế nữa!</p>
       <% if (!isAuthenticated) { %>
-        <a href="/auth/login" class="btn btn-light btn-lg mt-3">Đăng nhập ngay</a>
+        <a href="/auth/register" class="btn btn-light btn-lg mt-3">Đăng ký ngay</a>
       <% } %>
     </div>
-    <h2 class="mt-5 mb-3">Danh sách Chủ đề</h2>
+    <h2 class="mt-5 mb-3">Danh sách Diễn đàn và Chủ đề</h2>
+
+    <a class="btn btn-primary fw-bold px-4 py-2 rounded mb-4 " href="/forum">Thêm chủ đề</a>
+
+   
     <% if (typeof forums !== 'undefined' && forums.length > 0) { %>
       <div class="row">
         <% forums.forEach(forum => { %>
@@ -37,8 +41,6 @@
       <div class="alert alert-warning">Chưa có chủ đề nào. Hãy đăng nhập và tạo chủ đề!</div>
     <% } %>
   </div>
-
   <%- include('partials/footer') %>
-
 </body>
 </html>

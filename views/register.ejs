@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole }) %>
+  <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole, notifications: notifications }) %>
   <div class="container mt-5 pt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
@@ -30,7 +30,7 @@
                 <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
               </div>
               <div class="mb-3">
-                <label for="password" class="form-label">Mật khẩu:</label>
+                <label for="password" class that="form-label">Mật khẩu:</label>
                 <input type="password" class="form-control" id="password" name="password" required>
                 <div class="invalid-feedback">Vui lòng nhập mật khẩu.</div>
               </div>

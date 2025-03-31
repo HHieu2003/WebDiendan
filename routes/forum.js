@@ -4,24 +4,35 @@ const Forum = require('../models/Forum');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
 
 // Middleware xác thực
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const token = req.cookies.token;
   if (!token) {
     req.userId = null;
     req.role = null;
+    req.notifications = [];
+    console.log('Không có token, đặt notifications thành mảng rỗng');
     return next();
   }
   try {
     const decoded = jwt.verify(token, 'your_jwt_secret');
     req.userId = decoded.userId;
     req.role = decoded.role;
+    req.notifications = await Notification.find({ user: req.userId, read: false })
+      .populate('post')
+      .populate('comment')
+      .populate('commenter')
+      .sort({ createdAt: -1 });
+    console.log(`Số lượng thông báo chưa đọc: ${req.notifications.length}`);
     next();
   } catch (err) {
     req.userId = null;
     req.role = null;
+    req.notifications = [];
+    console.error('Lỗi khi lấy thông báo:', err);
     next();
   }
 };
@@ -41,7 +52,8 @@ router.get('/', authenticate, async (req, res) => {
     const forums = await getForums();
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('forum', { forums, isAuthenticated, userRole });
+    const notifications = req.notifications || [];
+    res.render('forum', { forums, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -56,7 +68,8 @@ router.get('/search', authenticate, async (req, res) => {
     }).populate('user');
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('forum', { forums, isAuthenticated, userRole });
+    const notifications = req.notifications || [];
+    res.render('forum', { forums, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -84,7 +97,8 @@ router.get('/topic/:id', authenticate, async (req, res) => {
     const posts = await Post.find({ forum: req.params.id }).populate('user');
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('topic', { forum, posts, isAuthenticated, userRole });
+    const notifications = req.notifications || [];
+    res.render('topic', { forum, posts, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -97,7 +111,8 @@ router.get('/topic/:id/add-post', authenticate, (req, res) => {
   }
   const isAuthenticated = req.userId !== null;
   const userRole = req.role;
-  res.render('add-post', { forumId: req.params.id, isAuthenticated, userRole });
+  const notifications = req.notifications || [];
+  res.render('add-post', { forumId: req.params.id, isAuthenticated, userRole, notifications });
 });
 
 // Thêm bài viết
@@ -122,7 +137,8 @@ router.get('/topic/:forumId/post/:postId', authenticate, async (req, res) => {
     const comments = await Comment.find({ post: req.params.postId }).populate('user');
     const isAuthenticated = req.userId !== null;
     const userRole = req.role;
-    res.render('post', { post, comments, forumId: req.params.forumId, isAuthenticated, userRole });
+    const notifications = req.notifications || [];
+    res.render('post', { post, comments, forumId: req.params.forumId, isAuthenticated, userRole, notifications });
   } catch (err) {
     res.status(500).send('Lỗi server');
   }
@@ -137,6 +153,21 @@ router.post('/topic/:forumId/post/:postId/comment', authenticate, async (req, re
   try {
     const comment = new Comment({ content, post: req.params.postId, user: req.userId });
     await comment.save();
+
+    // Tạo thông báo cho chủ bài viết
+    const post = await Post.findById(req.params.postId).populate('user');
+    const commenter = await User.findById(req.userId);
+    if (post.user._id.toString() !== req.userId.toString()) {
+      const notification = new Notification({
+        user: post.user._id,
+        post: req.params.postId,
+        comment: comment._id,
+        commenter: req.userId,
+        message: `${commenter.name} đã bình luận vào bài viết của bạn: "${post.title}"`,
+      });
+      await notification.save();
+    }
+
     res.redirect(`/forum/topic/${req.params.forumId}/post/${req.params.postId}`);
   } catch (err) {
     res.status(500).send('Lỗi server');
