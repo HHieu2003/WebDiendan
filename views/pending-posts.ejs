@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài viết chờ duyệt - <%= forum.title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole, notifications: notifications }) %>
+
+  <div class="container mt-5">
+    <h2>Bài viết chờ duyệt trong "<%= forum.title %>"</h2>
+   
+
+    <% if (pendingPosts.length === 0) { %>
+      <p>Không có bài viết nào đang chờ duyệt.</p>
+    <% } else { %>
+      <% pendingPosts.forEach(post => { %>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title"><%= post.title %></h5>
+            <p class="card-text"><%= post.content %></p>
+            <!-- Hiển thị ảnh -->
+            <% if (post.images && post.images.length > 0) { %>
+              <h6>Ảnh:</h6>
+              <div class="row">
+                <% post.images.forEach(image => { %>
+                  <div class="col-md-4 mb-3">
+                    <img src="<%= image %>" class="img-fluid" alt="Image">
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+            <!-- Hiển thị video -->
+            <% if (post.videos && post.videos.length > 0) { %>
+              <h6>Video:</h6>
+              <% post.videos.forEach(video => { %>
+                <div class="mb-3">
+                  <video controls class="w-100" style="max-height: 200px;">
+                    <source src="<%= video %>" type="video/mp4">
+                    Trình duyệt không hỗ trợ video.
+                  </video>
+                </div>
+              <% }) %>
+            <% } %>
+            <!-- Hiển thị file -->
+            <% if (post.files && post.files.length > 0) { %>
+              <h6>Tệp:</h6>
+              <ul>
+                <% post.files.forEach(file => { %>
+                  <li><a href="<%= file %>" target="_blank"><%= file.split('/').pop() %></a></li>
+                <% }) %>
+              </ul>
+            <% } %>
+            <p class="card-text">
+              <small class="text-muted">
+                Người đăng: <%= post.user.name %> | <%= new Date(post.createdAt).toLocaleString() %>
+              </small>
+            </p>
+            <form action="/forum/topic/<%= forum._id %>/post/<%= post._id %>/approve" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-success btn-sm">Duyệt</button>
+            </form>
+            <form action="/forum/topic/<%= forum._id %>/post/<%= post._id %>/reject" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Từ chối</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+    <a href="/forum/topic/<%= forum._id %>" class="btn btn-primary">Quay lại chủ đề</a>
+  </div>
+  <%- include('partials/footer') %>
+</body>
+</html>

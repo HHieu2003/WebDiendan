@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chủ đề: <%= forum.title %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .flash-message-container {
+      width: 300px;
+      max-width: 100%;
+    }
+    .alert {
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .preview-item {
+      max-width: 100px;
+      margin: 5px;
+    }
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole, notifications: notifications }) %>
+  <div class="container mt-5 pt-5">
+    <!-- Thông báo Flash -->
+    <div class="flash-message-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+      <% if (success_msg && success_msg.length > 0) { %>
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      <% if (error_msg && error_msg.length > 0) { %>
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+    </div>
+
+    <h2><%= forum.title %></h2>
+    <p>
+      <strong>Người tạo:</strong> <%= forum.user ? forum.user.name : 'Không xác định' %> | 
+      <strong>Ngày tạo:</strong> <%= new Date(forum.createdAt).toLocaleString() %>
+      <% if (forum.teacher) { %>
+        | <strong>Quản lý bởi:</strong> <%= forum.teacher.name %>
+      <% } %>
+    </p>
+    <p><%= forum.content %></p>
+    <h3>Bài viết</h3>
+    <% if (posts.length === 0) { %>
+      <p>Chưa có bài viết nào được duyệt.</p>
+    <% } else { %>
+      <div class="mb-4">
+        <% posts.forEach(post => { %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title"><a href="/forum/topic/<%= forum._id %>/post/<%= post._id %>"><%= post.title %></a></h5>
+              <p class="card-text">
+                <strong>Người đăng:</strong> <%= post.user ? post.user.name : 'Không xác định' %> | 
+                <strong>Ngày đăng:</strong> <%= new Date(post.createdAt).toLocaleString() %>
+              </p>
+              <p class="card-text"><%= post.content.substring(0, 100) %>...</p>
+              <!-- Nút chia sẻ Facebook -->
+<a 
+class="btn btn-outline-primary btn-sm mb-2"
+href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(`https://yourdomain.com/forum/topic/${forum._id}/post/${post._id}`) %>"
+target="_blank"
+rel="noopener noreferrer"
+>
+<i class="bi bi-facebook"></i> Chia sẻ Facebook
+</a>
+
+              <% if (post.images && post.images.length > 0) { %>
+                <div class="row">
+                  <% post.images.forEach(image => { %>
+                    <div class="col-md-3 mb-2">
+                      <img src="<%= image %>" class="img-fluid" alt="Image" style="max-height: 100px;">
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+    <% if (isAuthenticated) { %>
+      <a href="/forum/topic/<%= forum._id %>/add-post" class="btn btn-primary mb-3">Thêm bài viết</a>
+    <% } %>
+    <% if ((userRole === 'teacher' && forum.teacher && forum.teacher._id.toString() === req.userId) || userRole === 'admin') { %>
+      <a href="/forum/topic/<%= forum._id %>/pending-posts" class="btn btn-info mb-3">Xem bài viết chờ duyệt</a>
+    <% } %>
+  </div>
+  <%- include('partials/footer') %>
+  <script>
+    // Tự động ẩn thông báo flash sau 5 giây
+    setTimeout(() => {
+      ['successAlert', 'errorAlert'].forEach(id => {
+        const alert = document.getElementById(id);
+        if (alert) {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }
+      });
+    }, 5000);
+  </script>
+</body>
+</html>

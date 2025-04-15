@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang cá nhân</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/navbar', { isAuthenticated: isAuthenticated, userRole: userRole, notifications: notifications }) %>
+  <div class="container mt-5">
+    <div class="flash-message-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+      <% if (success_msg && success_msg.length > 0) { %>
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      <% if (error_msg && error_msg.length > 0) { %>
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+    </div>
+    <h1 class="mb-4 text-center">Trang cá nhân</h1>
+    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Thông tin cá nhân</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="forums-tab" data-bs-toggle="tab" data-bs-target="#forums" type="button" role="tab">Chủ đề của bạn</button>
+      </li>
+      <% if (userRole === 'teacher') { %>
+        <li class="nav-item">
+          <button class="nav-link" id="managed-forums-tab" data-bs-toggle="tab" data-bs-target="#managed-forums" type="button" role="tab">Chủ đề quản lý</button>
+        </li>
+      <% } %>
+      <li class="nav-item">
+        <button class="nav-link" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">Bài viết của bạn</button>
+      </li>
+      <% if (userRole === 'student') { %>
+        <li class="nav-item">
+          <button class="nav-link" id="pending-posts-tab" data-bs-toggle="tab" data-bs-target="#pending-posts" type="button" role="tab">Bài viết chờ duyệt</button>
+        </li>
+      <% } %>
+      <li class="nav-item">
+        <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">Bình luận của bạn</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">Thông báo</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">Báo cáo của bạn</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="profileTabsContent">
+      <div class="tab-pane fade show active" id="info" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Thông tin cá nhân</h2>
+          </div>
+          <div class="card-body">
+            <form action="/profile/update" method="POST" class="needs-validation" novalidate>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="name" class="form-label">Tên</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                  <div class="invalid-feedback">Vui lòng nhập tên.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+                  <div class="invalid-feedback">Vui lòng nhập email hợp lệ.</div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Mật khẩu mới (để trống nếu không đổi)</label>
+                <input type="password" class="form-control" id="password" name="password">
+              </div>
+              <button type="submit" class="btn btn-primary">Cập nhật</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="forums" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Chủ đề của bạn</h2>
+          </div>
+          <div class="card-body">
+            <% if (forums && forums.length > 0) { %>
+              <div class="row">
+                <% forums.forEach(forum => { %>
+                  <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <h5 class="card-title"><a href="/forum/topic/<%= forum._id %>" class="text-primary"><%= forum.title %></a></h5>
+                        <p class="card-text"><%= forum.content ? forum.content.substring(0, 100) + '...' : 'Không có nội dung' %></p>
+                        <p class="card-text text-muted">Được tạo: <%= new Date(forum.createdAt).toLocaleString() %></p>
+                        <% if (userRole === 'teacher' || userRole === 'admin') { %>
+                          <a href="/profile/delete-forum/<%= forum._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa chủ đề này?')">Xóa</a>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="alert alert-warning">Bạn chưa tạo chủ đề nào.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% if (userRole === 'teacher') { %>
+        <div class="tab-pane fade" id="managed-forums" role="tabpanel">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h2 class="mb-0">Chủ đề bạn quản lý</h2>
+            </div>
+            <div class="card-body">
+              <% if (managedForums && managedForums.length > 0) { %>
+                <div class="row">
+                  <% managedForums.forEach(forum => { %>
+                    <div class="col-md-4 mb-4">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h5 class="card-title"><a href="/forum/topic/<%= forum._id %>" class="text-primary"><%= forum.title %></a></h5>
+                          <p class="card-text"><%= forum.content ? forum.content.substring(0, 100) + '...' : 'Không có nội dung' %></p>
+                          <p class="card-text text-muted">Được tạo: <%= new Date(forum.createdAt).toLocaleString() %></p>
+                          <a href="/forum/topic/<%= forum._id %>/pending-posts" class="btn btn-info btn-sm">Xem bài viết chờ duyệt</a>
+                        </div>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <div class="alert alert-warning">Bạn chưa quản lý chủ đề nào.</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+      <div class="tab-pane fade" id="posts" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Bài viết của bạn</h2>
+          </div>
+          <div class="card-body">
+            <% if (posts && posts.length > 0) { %>
+              <div class="row">
+                <% posts.forEach(post => { %>
+                  <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <h5 class="card-title"><a href="/forum/topic/<%= post.forum._id %>/post/<%= post._id %>" class="text-primary"><%= post.title %></a></h5>
+                        <p class="card-text"><%= post.content ? post.content.substring(0, 100) + '...' : 'Không có nội dung' %></p>
+                        <p class="card-text text-muted">Được tạo: <%= new Date(post.createdAt).toLocaleString() %></p>
+                        <% if ((userRole === 'student' && post.user._id.toString() === req.userId) || userRole === 'teacher' || userRole === 'admin') { %>
+                          <a href="/profile/delete-post/<%= post._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa bài viết này?')">Xóa</a>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="alert alert-warning">Bạn chưa tạo bài viết nào.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% if (userRole === 'student') { %>
+        <div class="tab-pane fade" id="pending-posts" role="tabpanel">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h2 class="mb-0">Bài viết chờ duyệt</h2>
+            </div>
+            <div class="card-body">
+              <% if (pendingPosts && pendingPosts.length > 0) { %>
+                <div class="row">
+                  <% pendingPosts.forEach(post => { %>
+                    <div class="col-md-4 mb-4">
+                      <div class="card h-100">
+                        <div class="card-body">
+                          <h5 class="card-title"><%= post.title %></h5>
+                          <p class="card-text"><%= post.content ? post.content.substring(0, 100) + '...' : 'Không có nội dung' %></p>
+                          <p class="card-text text-muted">Được tạo: <%= new Date(post.createdAt).toLocaleString() %></p>
+                          <span class="badge bg-warning">Chờ duyệt</span>
+                          <a href="/profile/delete-post/<%= post._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa bài viết này?')">Xóa</a>
+                        </div>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <div class="alert alert-warning">Bạn không có bài viết nào đang chờ duyệt.</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+      <div class="tab-pane fade" id="comments" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Bình luận của bạn</h2>
+          </div>
+          <div class="card-body">
+            <% if (comments && comments.length > 0) { %>
+              <div class="list-group">
+                <% comments.forEach(comment => { %>
+                  <div class="list-group-item mb-3">
+                    <p class="mb-1">
+                      <% if (comment.post && comment.post.forum) { %>
+                        <a href="/forum/topic/<%= comment.post.forum._id %>/post/<%= comment.post._id %>" class="text-primary"><%= comment.content %></a>
+                      <% } else { %>
+                        <%= comment.content %> <span class="text-muted">(Bài viết đã bị xóa)</span>
+                      <% } %>
+                    </p>
+                    <p class="text-muted">Được tạo: <%= new Date(comment.createdAt).toLocaleString() %></p>
+                    <% if (comment.user._id.toString() === req.userId || userRole === 'teacher' || userRole === 'admin') { %>
+                      <a href="/profile/delete-comment/<%= comment._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa bình luận này?')">Xóa</a>
+                    <% } %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="alert alert-warning">Bạn chưa có bình luận nào.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="notifications" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Thông báo</h2>
+          </div>
+          <div class="card-body">
+            <% if (notifications && notifications.length > 0) { %>
+              <div class="list-group">
+                <% notifications.forEach(notification => { %>
+                  <div class="list-group-item mb-3 <%= notification.read ? 'bg-light' : '' %>">
+                    <p class="mb-1">
+                      <% if (notification.post && notification.post.forum) { %>
+                        <a href="/forum/topic/<%= notification.post.forum._id %>/post/<%= notification.post._id %>" class="text-primary"><%= notification.message %></a>
+                      <% } else if (notification.comment && notification.comment.post && notification.comment.post.forum) { %>
+                        <a href="/forum/topic/<%= notification.comment.post.forum._id %>/post/<%= notification.comment.post._id %>" class="text-primary"><%= notification.message %></a>
+                      <% } else { %>
+                        <%= notification.message %> <span class="text-muted">(Nội dung đã bị xóa)</span>
+                      <% } %>
+                    </p>
+                    <p class="text-muted">Thời gian: <%= new Date(notification.createdAt).toLocaleString() %></p>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="alert alert-warning">Bạn chưa có thông báo nào.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="reports" role="tabpanel">
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Báo cáo của bạn</h2>
+          </div>
+          <div class="card-body">
+            <% if (reports && reports.length > 0) { %>
+              <div class="list-group">
+                <% reports.forEach(report => { %>
+                  <div class="list-group-item mb-3">
+                    <p class="mb-1">
+                      <% if (report.comment && report.post && report.forum) { %>
+                        <strong>Bình luận:</strong> <%= report.comment.content.substring(0, 50) %>... 
+                        <a href="/forum/topic/<%= report.forum._id %>/post/<%= report.post._id %>" class="text-primary">(Xem bài viết)</a>
+                      <% } else { %>
+                        <strong>Bình luận:</strong> Bình luận đã bị xóa
+                      <% } %>
+                    </p>
+                    <% if (report.post && report.forum) { %>
+                      <p class="mb-1"><strong>Bài viết:</strong> <a href="/forum/topic/<%= report.forum._id %>/post/<%= report.post._id %>" class="text-primary"><%= report.post.title %></a></p>
+                      <p class="mb-1"><strong>Chủ đề:</strong> <a href="/forum/topic/<%= report.forum._id %>" class="text-primary"><%= report.forum.title %></a></p>
+                    <% } else { %>
+                      <p class="mb-1"><strong>Bài viết/Chủ đề:</strong> Không xác định</p>
+                    <% } %>
+                    <p class="text-muted">Báo cáo lúc: <%= new Date(report.createdAt).toLocaleString() %></p>
+                    <a href="/profile/delete-report/<%= report._id %>" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa báo cáo này?')">Xóa</a>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="alert alert-warning">Bạn chưa gửi báo cáo nào.</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-secondary">Quay lại trang chủ</a>
+    </div>
+  </div>
+  <%- include('partials/footer') %>
+  <script>
+    (function () {
+      'use strict';
+      const forms = document.querySelectorAll('.needs-validation');
+      forms.forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    })();
+    setTimeout(() => {
+      document.querySelectorAll('.alert').forEach(alert => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      });
+    }, 3000);
+  </script>
+</body>
+</html>

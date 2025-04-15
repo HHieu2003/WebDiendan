@@ -1,0 +1,86 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="/">Trang chủ</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="/forum">Chủ đề</a>
+        </li>
+        <% if (isAuthenticated) { %>
+          <% if (userRole === 'admin') { %>
+           
+            <li class="nav-item">
+              <a class="nav-link" href="/admin">Quản lý Admin</a>
+            </li>
+          <% } %>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile">Trang cá nhân</a>
+          </li>
+          <!-- Dropdown Thông báo -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-bell"></i>
+              <% if (notifications && notifications.length > 0) { %>
+                <span class="badge bg-danger rounded-pill"><%= notifications.length %></span>
+              <% } %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+              <% if (notifications && notifications.length > 0) { %>
+                <% notifications.forEach(notification => { %>
+                  <li>
+                    <!-- <a class="dropdown-item" href="/notifications/mark-read/<%= notification._id %>"> -->
+                      <a class="dropdown-item" href="/notifications/mark-read/<%= notification._id %>">
+                      <%= notification.message %>
+                      <small class="text-muted d-block"><%= new Date(notification.createdAt).toLocaleString() %></small>
+                    </a>
+                  </li>
+                <% }) %>
+              <% } else { %>
+                <li><a class="dropdown-item text-muted" href="#">Không có thông báo mới</a></li>
+              <% } %>
+            </ul>
+          </li>
+        <% } %>
+      </ul>
+      <form class="d-flex" action="/forum/search" method="GET" onsubmit="return validateSearch()">
+        <input class="form-control me-2" type="search" name="query" id="searchInput" placeholder="Tìm kiếm chủ đề..." aria-label="Search">
+        <button class="btn btn-outline-light" type="submit">Tìm</button>
+      </form>
+      
+      <ul class="navbar-nav ms-3">
+        <% if (isAuthenticated) { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/auth/logout">Đăng xuất</a>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/auth/login">Đăng nhập</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/auth/register">Đăng ký</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<style>
+  .navbar li a {
+    color: #fff;
+  }
+</style>
+<script>
+  function validateSearch() {
+    const input = document.getElementById('searchInput');
+    if (!input.value.trim()) {
+   
+      input.focus();
+      return false; // Ngăn không gửi form
+    }
+    return true; // Cho phép gửi form
+  }
+</script>

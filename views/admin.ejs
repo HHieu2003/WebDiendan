@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .sidebar {
+      position: sticky;
+      top: 80px;
+      height: calc(100vh - 80px);
+      background-color: #f8f9fa;
+      padding-top: 20px;
+    }
+    .sidebar .nav-link {
+      color: #333;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin: 5px 10px;
+    }
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background-color: #007bff;
+      color: white;
+    }
+    .content-section {
+      display: none !important;
+    }
+    .content-section.active {
+      display: block !important;
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        position: relative;
+        height: auto;
+        top: 0;
+      }
+    }
+    .navbar {
+      border-bottom: 3px solid #0d6efd;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .flash-message-container {
+      width: 300px;
+      max-width: 100%;
+    }
+    .alert {
+      font-size: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body style="padding-top: 0px;">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="sidebar" style="top: 10px; width:20%; border-right: 2px solid #707070; min-height: 800px;">
+        <h4 class="text-center" style="padding-bottom: 10px; border-bottom: 3px solid #000;">Quản lý Admin</h4>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#users" onclick="showSection('users')"><i class="bi bi-people me-2"></i>Quản lý Người dùng</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#forums" onclick="showSection('forums')"><i class="bi bi-chat-square-text me-2"></i>Quản lý Chủ đề</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#posts" onclick="showSection('posts')"><i class="bi bi-file-earmark-post me-2"></i>Quản lý Bài viết</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#pending-posts" onclick="showSection('pending-posts')"><i class="bi bi-hourglass-split me-2"></i>Chờ Duyệt Bài viết</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#comments" onclick="showSection('comments')"><i class="bi bi-chat-dots me-2"></i>Quản lý Bình luận</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#sensitive-words" onclick="showSection('sensitive-words')"><i class="bi bi-shield-exclamation me-2"></i>Quản lý Từ ngữ Nhạy cảm</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#reports" onclick="showSection('reports')"><i class="bi bi-flag me-2"></i>Quản lý Báo cáo</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Nội dung chính -->
+      <div class="mt-3" style="top: 10px; width:80%;">
+        <div class="mb-2">
+          <a href="/" class="btn btn-secondary">Quay lại Trang chủ</a>
+        </div>
+
+        <!-- Thông báo Flash -->
+        <div class="flash-message-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+          <% if (success_msg && success_msg.length > 0) { %>
+            <div id="successAlert" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          <% if (error_msg && error_msg.length > 0) { %>
+            <div id="errorAlert" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+              <%= error_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Quản lý Người dùng -->
+        <div id="users" class="content-section card mb-4 shadow active">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Người dùng</h2>
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openAddUserModal()">Thêm Người dùng</button>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="userSearch" class="form-control" placeholder="Tìm kiếm theo tên hoặc email...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="userTable">
+                <thead>
+                  <tr>
+                    <th>Tên</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach(user => { %>
+                    <tr>
+                      <td><%= user.name %></td>
+                      <td><%= user.email %></td>
+                      <td><%= user.role %></td>
+                      <td>
+                        <button class="btn btn-sm btn-warning me-2" onclick="openEditUserModal('<%= user._id %>', '<%= encodeURIComponent(user.name) %>', '<%= encodeURIComponent(user.email) %>', '<%= user.role %>')">Sửa</button>
+                        <a href="/admin/delete-user/<%= user._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Chủ đề -->
+        <div id="forums" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Chủ đề</h2>
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#forumModal" onclick="openAddForumModal()">Thêm Chủ đề</button>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="forumSearch" class="form-control" placeholder="Tìm kiếm theo tiêu đề...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="forumTable">
+                <thead>
+                  <tr>
+                    <th>Tiêu đề</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% forums.forEach(forum => { %>
+                    <tr>
+                      <td><a href="/forum/topic/<%= forum._id %>"><%= forum.title %></a></td>
+                      <td><%= forum.user ? forum.user.name : 'Không xác định' %></td>
+                      <td><%= new Date(forum.createdAt).toLocaleString() %></td>
+                      <td>
+                        <button class="btn btn-sm btn-warning me-2" onclick="openEditForumModal('<%= forum._id %>', '<%= encodeURIComponent(forum.title) %>', '<%= encodeURIComponent(forum.content) %>')">Sửa</button>
+                        <a href="/admin/delete-forum/<%= forum._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Bài viết -->
+        <div id="posts" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Bài viết</h2>
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#postModal" onclick="openAddPostModal()">Thêm Bài viết</button>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="postSearch" class="form-control" placeholder="Tìm kiếm theo tiêu đề...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="postTable">
+                <thead>
+                  <tr>
+                    <th>Tiêu đề</th>
+                    <th>Chủ đề</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% posts.forEach(post => { %>
+                    <tr>
+                      <td><a href="/forum/topic/<%= post.forum._id %>/post/<%= post._id %>"><%= post.title %></a></td>
+                      <td><%= post.forum ? post.forum.title : 'Không xác định' %></td>
+                      <td><%= post.user ? post.user.name : 'Không xác định' %></td>
+                      <td><%= new Date(post.createdAt).toLocaleString() %></td>
+                      <td><%= post.isApproved ? 'Đã duyệt' : 'Chờ duyệt' %></td>
+                      <td>
+                        <button class="btn btn-sm btn-warning me-2" onclick="openEditPostModal('<%= post._id %>', '<%= encodeURIComponent(post.title) %>', '<%= encodeURIComponent(post.content) %>', '<%= post.forum._id %>')">Sửa</button>
+                        <a href="/admin/delete-post/<%= post._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                        <% if (!post.isApproved) { %>
+                          <a href="/admin/approve-post/<%= post._id %>" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc muốn duyệt bài viết này?')">Duyệt</a>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Bài viết Chờ Duyệt -->
+        <div id="pending-posts" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Bài viết Chờ Duyệt</h2>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="pendingPostSearch" class="form-control" placeholder="Tìm kiếm theo tiêu đề...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="pendingPostTable">
+                <thead>
+                  <tr>
+                    <th>Tiêu đề</th>
+                    <th>Chủ đề</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% pendingPosts.forEach(post => { %>
+                    <tr>
+                      <td><a href="/forum/topic/<%= post.forum._id %>/post/<%= post._id %>"><%= post.title %></a></td>
+                      <td><%= post.forum ? post.forum.title : 'Không xác định' %></td>
+                      <td><%= post.user ? post.user.name : 'Không xác định' %></td>
+                      <td><%= new Date(post.createdAt).toLocaleString() %></td>
+                      <td>
+                        <a href="/admin/approve-post/<%= post._id %>" class="btn btn-sm btn-success" onclick="return confirm('Bạn có chắc muốn duyệt bài viết này?')">Duyệt</a>
+                        <a href="/admin/delete-post/<%= post._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Bình luận -->
+        <div id="comments" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Bình luận</h2>
+            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#commentModal" onclick="openAddCommentModal()">Thêm Bình luận</button>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="commentSearch" class="form-control" placeholder="Tìm kiếm theo nội dung...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="commentTable">
+                <thead>
+                  <tr>
+                    <th>Nội dung</th>
+                    <th>Bài viết</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% comments.forEach(comment => { %>
+                    <tr>
+                      <td><%= comment.content.substring(0, 50) %>...</td>
+                      <td><%= comment.post ? comment.post.title : 'Không xác định' %></td>
+                      <td><%= comment.user ? comment.user.name : 'Không xác định' %></td>
+                      <td><%= new Date(comment.createdAt).toLocaleString() %></td>
+                      <td>
+                        <button class="btn btn-sm btn-warning me-2" onclick="openEditCommentModal('<%= comment._id %>', '<%= encodeURIComponent(comment.content) %>', '<%= comment.post._id %>')">Sửa</button>
+                        <a href="/admin/delete-comment/<%= comment._id %>" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Từ ngữ Nhạy cảm -->
+        <div id="sensitive-words" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Từ ngữ Nhạy cảm</h2>
+          </div>
+          <div class="card-body">
+            <form action="/admin/sensitive-words/add" method="POST" id="addWordForm" class="needs-validation mb-4" novalidate>
+              <div class="mb-3">
+                <label for="word" class="form-label">Từ ngữ</label>
+                <input type="text" class="form-control" id="word" name="word" required>
+                <div class="invalid-feedback">Vui lòng nhập từ ngữ.</div>
+              </div>
+              <button type="submit" class="btn btn-primary">Thêm</button>
+            </form>
+            <div class="mb-3">
+              <input type="text" id="sensitiveWordSearch" class="form-control" placeholder="Tìm kiếm theo từ ngữ...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="sensitiveWordTable">
+                <thead>
+                  <tr>
+                    <th>Từ ngữ</th>
+                    <th>Người thêm</th>
+                    <th>Ngày thêm</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% sensitiveWords.forEach(word => { %>
+                    <tr>
+                      <td><%= word.word %></td>
+                      <td><%= word.addedBy ? word.addedBy.name : 'Không xác định' %></td>
+                      <td><%= new Date(word.createdAt).toLocaleString() %></td>
+                      <td>
+                        <form action="/admin/sensitive-words/delete/<%= word._id %>" method="POST" style="display: inline;">
+                          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quản lý Báo cáo -->
+        <div id="reports" class="content-section card mb-4 shadow">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Danh sách Báo cáo</h2>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <input type="text" id="reportSearch" class="form-control" placeholder="Tìm kiếm theo nội dung bình luận...">
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="reportTable">
+                <thead>
+                  <tr>
+                    <th>Nội dung Bình luận</th>
+                    <th>Người Báo cáo</th>
+                    <th>Người Bình luận</th>
+                    <th>Bài viết</th>
+                    <th>Chủ đề</th>
+                    <th>Ngày Báo cáo</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% reports.forEach(report => { %>
+                    <tr>
+                      <td><%= report.comment ? report.comment.content.substring(0, 50) + '...' : 'Không xác định' %></td>
+                      <td><%= report.reportedBy ? report.reportedBy.name : 'Không xác định' %></td>
+                      <td><%= report.comment && report.comment.user ? report.comment.user.name : 'Không xác định' %></td>
+                      <td><a href="/forum/topic/<%= report.forum._id %>/post/<%= report.post._id %>"><%= report.post ? report.post.title : 'Không xác định' %></a></td>
+                      <td><a href="/forum/topic/<%= report.forum._id %>"><%= report.forum ? report.forum.title : 'Không xác định' %></a></td>
+                      <td><%= new Date(report.createdAt).toLocaleString() %></td>
+                      <td>
+                        <a href="/admin/delete-comment/<%= report.comment._id %>" class="btn btn-sm btn-danger me-2" onclick="return confirm('Xóa bình luận này sẽ xóa báo cáo. Bạn có chắc?')">Xóa Bình luận</a>
+                        <form action="/admin/dismiss-report/<%= report._id %>" method="POST" style="display: inline;">
+                          <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Bạn có chắc muốn bỏ qua báo cáo này?')">Bỏ qua</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Người dùng -->
+  <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="userModalLabel">Thêm Người dùng</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="userForm" action="/admin/add-user" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="userId" name="id">
+            <div class="mb-3">
+              <label for="userName" class="form-label">Tên</label>
+              <input type="text" class="form-control" id="userName" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="userEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="userEmail" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="userPassword" class="form-label">Mật khẩu</label>
+              <input type="password" class="form-control" id="userPassword" name="password">
+            </div>
+            <div class="mb-3">
+              <label for="userRole" class="form-label">Vai trò</label>
+              <select class="form-control" id="userRole" name="role" required>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Chủ đề -->
+  <div class="modal fade" id="forumModal" tabindex="-1" aria-labelledby="forumModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="forumModalLabel">Thêm Chủ đề</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="forumForm" action="/admin/add-forum" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="forumId" name="id">
+            <div class="mb-3">
+              <label for="forumTitle" class="form-label">Tiêu đề</label>
+              <input type="text" class="form-control" id="forumTitle" name="title" required>
+            </div>
+            <div class="mb-3">
+              <label for="forumContent" class="form-label">Nội dung</label>
+              <textarea class="form-control" id="forumContent" name="content" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bài viết -->
+  <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="postModalLabel">Thêm Bài viết</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="postForm" action="/admin/add-post" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="postId" name="id">
+            <div class="mb-3">
+              <label for="postTitle" class="form-label">Tiêu đề</label>
+              <input type="text" class="form-control" id="postTitle" name="title" required>
+            </div>
+            <div class="mb-3">
+              <label for="postContent" class="form-label">Nội dung</label>
+              <textarea class="form-control" id="postContent" name="content" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="postForum" class="form-label">Chủ đề</label>
+              <select class="form-control" id="postForum" name="forum" required>
+                <% forums.forEach(forum => { %>
+                  <option value="<%= forum._id %>"><%= forum.title %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Bình luận -->
+  <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="commentModalLabel">Thêm Bình luận</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="commentForm" action="/admin/add-comment" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="commentId" name="id">
+            <div class="mb-3">
+              <label for="commentContent" class="form-label">Nội dung</label>
+              <textarea class="form-control" id="commentContent" name="content" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="commentPost" class="form-label">Bài viết</label>
+              <select class="form-control" id="commentPost" name="post" required>
+                <% posts.forEach(post => { %>
+                  <option value="<%= post._id %>"><%= post.title %></option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Chuyển đổi section
+    function showSection(sectionId) {
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelector(`a[href="#${sectionId}"]`).classList.add('active');
+    }
+
+    // Hiển thị section "Quản lý Người dùng" khi tải trang
+    document.addEventListener('DOMContentLoaded', () => {
+      showSection('users');
+    });
+
+    // Modal Người dùng
+    function openAddUserModal() {
+      document.getElementById('userModalLabel').textContent = 'Thêm Người dùng';
+      document.getElementById('userForm').action = '/admin/add-user';
+      document.getElementById('userId').value = '';
+      document.getElementById('userName').value = '';
+      document.getElementById('userEmail').value = '';
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userRole').value = 'student';
+    }
+
+    function openEditUserModal(id, encodedName, encodedEmail, role) {
+      document.getElementById('userModalLabel').textContent = 'Sửa Người dùng';
+      document.getElementById('userForm').action = '/admin/edit-user';
+      document.getElementById('userId').value = id;
+      document.getElementById('userName').value = decodeURIComponent(encodedName);
+      document.getElementById('userEmail').value = decodeURIComponent(encodedEmail);
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userRole').value = role;
+      const modal = new bootstrap.Modal(document.getElementById('userModal'));
+      modal.show();
+    }
+
+    // Modal Chủ đề
+    function openAddForumModal() {
+      document.getElementById('forumModalLabel').textContent = 'Thêm Chủ đề';
+      document.getElementById('forumForm').action = '/admin/add-forum';
+      document.getElementById('forumId').value = '';
+      document.getElementById('forumTitle').value = '';
+      document.getElementById('forumContent').value = '';
+    }
+
+    function openEditForumModal(id, encodedTitle, encodedContent) {
+      document.getElementById('forumModalLabel').textContent = 'Sửa Chủ đề';
+      document.getElementById('forumForm').action = '/admin/edit-forum';
+      document.getElementById('forumId').value = id;
+      document.getElementById('forumTitle').value = decodeURIComponent(encodedTitle);
+      document.getElementById('forumContent').value = decodeURIComponent(encodedContent);
+      const modal = new bootstrap.Modal(document.getElementById('forumModal'));
+      modal.show();
+    }
+
+    // Modal Bài viết
+    function openAddPostModal() {
+      document.getElementById('postModalLabel').textContent = 'Thêm Bài viết';
+      document.getElementById('postForm').action = '/admin/add-post';
+      document.getElementById('postId').value = '';
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postContent').value = '';
+      document.getElementById('postForum').value = '';
+    }
+
+    function openEditPostModal(id, encodedTitle, encodedContent, forumId) {
+      document.getElementById('postModalLabel').textContent = 'Sửa Bài viết';
+      document.getElementById('postForm').action = '/admin/edit-post';
+      document.getElementById('postId').value = id;
+      document.getElementById('postTitle').value = decodeURIComponent(encodedTitle);
+      document.getElementById('postContent').value = decodeURIComponent(encodedContent);
+      document.getElementById('postForum').value = forumId;
+      const modal = new bootstrap.Modal(document.getElementById('postModal'));
+      modal.show();
+    }
+
+    // Modal Bình luận
+    function openAddCommentModal() {
+      document.getElementById('commentModalLabel').textContent = 'Thêm Bình luận';
+      document.getElementById('commentForm').action = '/admin/add-comment';
+      document.getElementById('commentId').value = '';
+      document.getElementById('commentContent').value = '';
+      document.getElementById('commentPost').value = '';
+    }
+
+    function openEditCommentModal(id, encodedContent, postId) {
+      document.getElementById('commentModalLabel').textContent = 'Sửa Bình luận';
+      document.getElementById('commentForm').action = '/admin/edit-comment';
+      document.getElementById('commentId').value = id;
+      document.getElementById('commentContent').value = decodeURIComponent(encodedContent);
+      document.getElementById('commentPost').value = postId;
+      const modal = new bootstrap.Modal(document.getElementById('commentModal'));
+      modal.show();
+    }
+
+    // Tìm kiếm client-side
+    document.getElementById('userSearch').addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#userTable tbody tr').forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        const email = row.cells[1].textContent.toLowerCase();
+        row.style.display = (name.includes(search) || email.includes(search)) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('forumSearch').addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#forumTable tbody tr').forEach(row => {
+        const title = row.cells[0].textContent.toLowerCase();
+        row.style.display = title.includes(search) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('postSearch').addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#postTable tbody tr').forEach(row => {
+        const title = row.cells[0].textContent.toLowerCase();
+        row.style.display = title.includes(search) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('pendingPostSearch')?.addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#pendingPostTable tbody tr').forEach(row => {
+        const title = row.cells[0].textContent.toLowerCase();
+        row.style.display = title.includes(search) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('commentSearch').addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#commentTable tbody tr').forEach(row => {
+        const content = row.cells[0].textContent.toLowerCase();
+        row.style.display = content.includes(search) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('sensitiveWordSearch')?.addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#sensitiveWordTable tbody tr').forEach(row => {
+        const word = row.cells[0].textContent.toLowerCase();
+        row.style.display = word.includes(search) ? '' : 'none';
+      });
+    });
+
+    document.getElementById('reportSearch')?.addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      document.querySelectorAll('#reportTable tbody tr').forEach(row => {
+        const content = row.cells[0].textContent.toLowerCase();
+        row.style.display = content.includes(search) ? '' : 'none';
+      });
+    });
+
+    // Bootstrap validation cho form thêm từ ngữ
+    document.getElementById('addWordForm')?.addEventListener('submit', function(event) {
+      const form = this;
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+
+    // Tự động ẩn thông báo sau 3 giây
+    setTimeout(() => {
+      const successAlert = document.getElementById('successAlert');
+      const errorAlert = document.getElementById('errorAlert');
+      if (successAlert) {
+        const alert = new bootstrap.Alert(successAlert);
+        alert.close();
+      }
+      if (errorAlert) {
+        const alert = new bootstrap.Alert(errorAlert);
+        alert.close();
+      }
+    }, 3000);
+  </script>
+</body>
+</html>
