@@ -40,8 +40,8 @@
     <div class="row justify-content-center">
       <div class="col-md-6">
         <div class=" shadow">
-          <div class="card-header bg-primary text-white text-center">
-            <h2>Đăng nhập</h2>
+          <div class="card-header text-white text-center" style="background-color: rgb(24 109 13);">
+            <h2 style="color: white;">Đăng nhập</h2>
             <% if (error_msg && error_msg.length > 0) { %>
               <div class="text-danger small mt-1"><%= error_msg %></div>
             <% } %>
@@ -59,7 +59,7 @@
                 <input type="password" class="form-control" id="password" name="password" required>
                 <div class="invalid-feedback">Vui lòng nhập mật khẩu.</div>
               </div>
-              <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+              <button type="submit" class="btn btn-primary w-100" style="background-color: rgb(24 109 13);">Đăng nhập</button>
             </form>
             <p class="mt-3 text-center">Chưa có tài khoản? <a href="/auth/register" class="link-primary">Đăng ký</a></p>
           </div>
