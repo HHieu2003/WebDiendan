@@ -26,6 +26,16 @@
       display: flex;
       flex-wrap: wrap;
     }
+    .media-preview {
+  object-fit: cover;
+  max-height: 200px;
+}
+.media-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
   </style>
 </head>
 <body>
@@ -46,113 +56,176 @@
         </div>
       <% } %>
     </div>
-
-    <h2><%= post.title %></h2>
-    <p>
-      <strong>Người đăng:</strong> <%= post.user ? post.user.name : 'Không xác định' %> | 
-      <strong>Ngày đăng:</strong> <%= new Date(post.createdAt).toLocaleString() %>
-    </p>
-    <p><%= post.content %></p>
-    <% if (post.images && post.images.length > 0) { %>
-      <div class="media-container">
-        <% post.images.forEach(image => { %>
-          <img src="<%= image %>" class="media-preview" alt="Image">
-        <% }) %>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title mb-3"><i class="bi bi-file-text"></i>Bài viết:  <%= post.title %></h2>
+        <p class="text-muted mb-2">
+          <i class="bi bi-person-circle"></i> <strong>Người đăng:</strong> <%= post.user ? post.user.name : 'Không xác định' %> |
+          <i class="bi bi-calendar-event"></i> <strong>Ngày đăng:</strong> <%= new Date(post.createdAt).toLocaleString() %>
+        </p>
+    
+        <p class="card-text"><strong>Nội dung: </strong><%= post.content %></p>
+    
+        <!-- Ảnh -->
+        <% if (post.images && post.images.length > 0) { %>
+          <div class="media-container mt-3 d-flex flex-wrap gap-2">
+            <% post.images.forEach(image => { %>
+              <img src="<%= image %>" class="media-preview rounded border" alt="Image" style="max-width: 200px;">
+            <% }) %>
+          </div>
+        <% } %>
+    
+        <!-- Video -->
+        <% if (post.videos && post.videos.length > 0) { %>
+          <div class="media-container mt-3 d-flex flex-wrap gap-3">
+            <% post.videos.forEach(video => { %>
+              <video src="<%= video %>" class="media-preview border rounded" controls style="max-width: 300px;"></video>
+            <% }) %>
+          </div>
+        <% } %>
+    
+        <!-- Tệp -->
+        <% if (post.files && post.files.length > 0) { %>
+          <div class="mt-3">
+            <% post.files.forEach(file => { %>
+              <a href="<%= file %>" target="_blank" class="btn btn-outline-secondary btn-sm me-2 mb-2">
+                <i class="bi bi-paperclip"></i> <%= file.split('/').pop() %>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+    
+        <!-- Quyền xóa -->
+        <% if (
+          (userRole === 'teacher' && forum.teacher && forum.teacher._id.toString() === req.userId) ||
+          userRole === 'admin' ||
+          (post.user && post.user._id.toString() === req.userId)
+        ) { %>
+          <a href="/forum/topic/<%= forumId %>/post/<%= post._id %>/delete" class="btn btn-danger mt-3">
+            <i class="bi bi-trash"></i> Xóa bài viết
+          </a>
+        <% } %>
       </div>
-    <% } %>
-    <% if (post.videos && post.videos.length > 0) { %>
-      <div class="media-container">
-        <% post.videos.forEach(video => { %>
-          <video src="<%= video %>" class="media-preview" controls></video>
-        <% }) %>
-      </div>
-    <% } %>
-    <% if (post.files && post.files.length > 0) { %>
-      <div>
-        <% post.files.forEach(file => { %>
-          <a href="<%= file %>" target="_blank" class="btn btn-link"><%= file.split('/').pop() %></a>
-        <% }) %>
-      </div>
-    <% } %>
-    <% if ((userRole === 'teacher' && forum.teacher && forum.teacher._id.toString() === req.userId) || 
-          userRole === 'admin' || 
-          (post.user && post.user._id.toString() === req.userId)) { %>
-      <a href="/forum/topic/<%= forumId %>/post/<%= post._id %>/delete" class="btn btn-danger mb-3">Xóa bài viết</a>
-    <% } %>
-    <h3>Bình luận</h3>
+    </div>
+    
+    <h3 class="mb-3"><i class="bi bi-chat-left-dots"></i> Bình luận</h3>
+    
     <% if (comments.length === 0) { %>
       <p>Chưa có bình luận nào.</p>
     <% } else { %>
       <div class="mb-4">
         <% comments.forEach(comment => { %>
-          <div class="card mb-3">
+          <div class="card mb-3 shadow-sm">
             <div class="card-body">
-              <p class="card-text">
-                <strong><%= comment.user ? comment.user.name : 'Không xác định' %></strong> | 
-                <%= new Date(comment.createdAt).toLocaleString() %>
-              </p>
-              <p class="card-text"><%= comment.content %></p>
-              <% if (comment.images && comment.images.length > 0) { %>
-                <div class="media-container">
-                  <% comment.images.forEach(image => { %>
-                    <img src="<%= image %>" class="media-preview" alt="Image">
-                  <% }) %>
+              <div class="row">
+                <!-- Cột nội dung bên trái -->
+                <div class="col-10">
+                  <p class="mb-1">
+                    <strong><i class="bi bi-person"></i> <%= comment.user ? comment.user.name : 'Không xác định' %></strong> |
+                    <small class="text-muted"><%= new Date(comment.createdAt).toLocaleString() %></small>
+                  </p>
+                  <p class="card-text"><%= comment.content %></p>
+      
+                  <% if (comment.images && comment.images.length > 0) { %>
+                    <div class="media-container mt-2 d-flex flex-wrap gap-2">
+                      <% comment.images.forEach(image => { %>
+                        <img src="<%= image %>" class="media-preview rounded border" alt="Image" style="max-width: 180px;">
+                      <% }) %>
+                    </div>
+                  <% } %>
+      
+                  <% if (comment.videos && comment.videos.length > 0) { %>
+                    <div class="media-container mt-2 d-flex flex-wrap gap-3">
+                      <% comment.videos.forEach(video => { %>
+                        <video src="<%= video %>" class="media-preview rounded border" controls style="max-width: 300px;"></video>
+                      <% }) %>
+                    </div>
+                  <% } %>
+      
+                  <% if (comment.files && comment.files.length > 0) { %>
+                    <div class="mt-2">
+                      <% comment.files.forEach(file => { %>
+                        <a href="<%= file %>" target="_blank" class="btn btn-outline-secondary btn-sm me-2 mb-2">
+                          <i class="bi bi-paperclip"></i> <%= file.split('/').pop() %>
+                        </a>
+                      <% }) %>
+                    </div>
+                  <% } %>
                 </div>
-              <% } %>
-              <% if (comment.videos && comment.videos.length > 0) { %>
-                <div class="media-container">
-                  <% comment.videos.forEach(video => { %>
-                    <video src="<%= video %>" class="media-preview" controls></video>
-                  <% }) %>
+      
+                <!-- Cột nút bên phải -->
+                <div class="col-2 text-end">
+                  <div class="d-flex flex-column align-items-end gap-2">
+                    <% if ((userRole === 'teacher' && forum.teacher && forum.teacher._id.toString() === req.userId) || 
+                          userRole === 'admin' || 
+                          (comment.user && comment.user._id.toString() === req.userId)) { %>
+                      <a href="/forum/topic/<%= forumId %>/post/<%= post._id %>/delete-comment/<%= comment._id %>" 
+                         class="btn btn-danger btn-sm w-100">
+                        <i class="bi bi-trash"></i> Xóa
+                      </a>
+                    <% } %>
+                    <% if (isAuthenticated) { %>
+                      <form action="/forum/topic/<%= forumId %>/post/<%= post._id %>/comment/<%= comment._id %>/report" method="POST" class="w-100">
+                        <button type="submit" class="btn btn-warning btn-sm w-100">
+                          <i class="bi bi-flag"></i> Báo cáo
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
                 </div>
-              <% } %>
-              <% if (comment.files && comment.files.length > 0) { %>
-                <div>
-                  <% comment.files.forEach(file => { %>
-                    <a href="<%= file %>" target="_blank" class="btn btn-link"><%= file.split('/').pop() %></a>
-                  <% }) %>
-                </div>
-              <% } %>
-              <% if ((userRole === 'teacher' && forum.teacher && forum.teacher._id.toString() === req.userId) || 
-                    userRole === 'admin' || 
-                    (comment.user && comment.user._id.toString() === req.userId)) { %>
-                <a href="/forum/topic/<%= forumId %>/post/<%= post._id %>/delete-comment/<%= comment._id %>" class="btn btn-danger btn-sm">Xóa</a>
-              <% } %>
-              <% if (isAuthenticated) { %>
-                <form action="/forum/topic/<%= forumId %>/post/<%= post._id %>/comment/<%= comment._id %>/report" method="POST" style="display: inline;">
-                  <button type="submit" class="btn btn-warning btn-sm">Báo cáo</button>
-                </form>
-              <% } %>
+              </div>
             </div>
           </div>
         <% }) %>
       </div>
+      
     <% } %>
     <% if (isAuthenticated) { %>
-      <h4>Thêm bình luận</h4>
+      <h4 class="mb-3"><i class="bi bi-pencil-square"></i> Thêm bình luận</h4>
+
       <form action="/forum/topic/<%= forumId %>/post/<%= post._id %>/comment" method="POST" enctype="multipart/form-data" id="commentForm" class="needs-validation" novalidate>
+        <!-- Nội dung -->
         <div class="mb-3">
-          <label for="content" class="form-label">Nội dung</label>
-          <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
+          <textarea class="form-control" id="content" name="content" rows="3" placeholder="Nhập nội dung bình luận..." required></textarea>
           <div class="invalid-feedback">Vui lòng nhập nội dung bình luận.</div>
         </div>
-        <div class="mb-3">
-          <label for="images" class="form-label">Ảnh (JPEG, PNG, GIF)</label>
-          <input type="file" class="form-control" id="images" name="images" accept="image/jpeg,image/png,image/gif" multiple>
-          <div id="imagePreview" class="media-container"></div>
+      
+        <!-- Tệp -->
+        <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+          <!-- Ảnh -->
+          <div>
+            <label for="images" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Thêm ảnh">
+              <i class="bi bi-image"></i>
+            </label>
+            <input type="file" id="images" name="images" accept="image/jpeg,image/png,image/gif" multiple hidden>
+            <div id="imagePreview" class="media-container mt-2"></div>
+          </div>
+      
+          <!-- Video -->
+          <div>
+            <label for="videos" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Thêm video">
+              <i class="bi bi-camera-reels"></i>
+            </label>
+            <input type="file" id="videos" name="videos" accept="video/mp4,video/mpeg,video/webm" multiple hidden>
+            <div id="videoPreview" class="media-container mt-2"></div>
+          </div>
+      
+          <!-- File -->
+          <div>
+            <label for="files" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Thêm tệp">
+              <i class="bi bi-paperclip"></i>
+            </label>
+            <input type="file" id="files" name="files" accept=".pdf,.txt,.doc,.docx" multiple hidden>
+            <div id="filePreview" class="media-container mt-2"></div>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="videos" class="form-label">Video (MP4, MPEG, WebM)</label>
-          <input type="file" class="form-control" id="videos" name="videos" accept="video/mp4,video/mpeg,video/webm" multiple>
-          <div id="videoPreview" class="media-container"></div>
-        </div>
-        <div class="mb-3">
-          <label for="files" class="form-label">Tệp (PDF, TXT, DOC, DOCX)</label>
-          <input type="file" class="form-control" id="files" name="files" accept=".pdf,.txt,.doc,.docx" multiple>
-          <div id="filePreview" class="media-container"></div>
-        </div>
-        <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+      
+        <!-- Gửi -->
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-send"></i> Gửi
+        </button>
       </form>
+      
     <% } %>
   </div>
   <%- include('partials/footer') %>
